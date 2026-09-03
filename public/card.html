@@ -158,13 +158,33 @@
       );
     }
 
-    .c-back-label {
+    .c-back-inner {
       position: relative;
-      font-size: 0.58rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .c-back-label {
+      font-size: 0.72rem;
       font-weight: 700;
-      letter-spacing: 0.28em;
-      color: rgba(0,0,0,0.15);
+      letter-spacing: 0.22em;
+      color: rgba(0,0,0,0.2);
       text-transform: uppercase;
+    }
+
+    .c-back-venue {
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: rgba(0,0,0,0.14);
+    }
+
+    .c-back-date {
+      font-size: 0.55rem;
+      letter-spacing: 0.03em;
+      color: rgba(0,0,0,0.12);
     }
 
     /* Card front */
@@ -606,7 +626,11 @@
         <div class="card-flipper" id="cardFlipper">
 
           <div class="card-face c-back">
-            <span class="c-back-label">Card Gacha</span>
+            <div class="c-back-inner">
+              <span class="c-back-label">Card Gacha</span>
+              <span class="c-back-venue">경북대미술관</span>
+              <span class="c-back-date">2026. 7. 31. ~ 11. 14.</span>
+            </div>
           </div>
 
           <div class="card-face c-front" id="cardFront">
@@ -643,8 +667,8 @@
           <div class="pack-top-sub">카드깡 컬렉션</div>
         </div>
         <div class="pack-bottom" id="packBottom">
-          <div class="pack-bottom-brand">카드깡</div>
-          <div class="pack-bottom-year">2026</div>
+          <div class="pack-bottom-brand">경북대미술관</div>
+          <div class="pack-bottom-year">2026. 7. 31. ~ 11. 14.</div>
         </div>
         <div class="tear-line" id="tearLine"></div>
       </div>
