@@ -695,6 +695,33 @@
     const CARD_COUNT = 19;
     const IMG_BASE   = './images/';
 
+    // Maps card number → actual image file number
+    // (because user's file numbering ≠ artwork order)
+    const IMG_MAP = [
+      0,   // 0 unused
+      1,   // 1  Face of Face-#1        → 1.png
+      2,   // 2  Face of Face-#3        → 2.png
+      18,  // 3  Face of Face-#5        → 18.png
+      6,   // 4  공동고백               → 6.png
+      3,   // 5  Gestures in the Subway → 3.png
+      5,   // 6  Ruler No. 0            → 5.png
+      7,   // 7  유령과 바다            → 7.png
+      8,   // 8  빨간내복 20097         → 8.png
+      9,   // 9  부동산적 풍경화 #2     → 9.png
+      10,  // 10 Destroyer/Protector    → 10.png
+      4,   // 11 뇌                     → 4.png
+      11,  // 12 Hollow Show-Night Life → 11.png
+      13,  // 13 에너지 드링크          → 13.png
+      15,  // 14 터뷸런스               → 15.png
+      23,  // 15 CPR Board B            → 23.png
+      16,  // 16 Only.Love.gr.pu        → 16.png
+      20,  // 17 숲속 생활연구소 타이머 → 20.png
+      21,  // 18 숲속 생활연구소 두더지 → 21.png
+      22,  // 19 숲속 생활연구소 헬멧   → 22.png
+      20,  // 20 RARE 표준 사용법 포스터 → 20.png
+      21,  // 21 RARE 표준 사용법 포스터 → 21.png
+    ];
+
     // ── Artwork data ──────────────────────────────
     const CARD_DATA = [
       null, // 0-index placeholder
@@ -847,7 +874,8 @@
         document.getElementById('rareHolo').style.display = 'block';
       }
 
-      // Load artwork image
+      // Load artwork image via mapping
+      const fileNum = IMG_MAP[cardNum] || cardNum;
       const img = new Image();
       img.className = 'artwork-img';
       img.alt = data ? data.title : `작품 ${cardNum}`;
@@ -855,7 +883,7 @@
         artworkArea.insertBefore(img, artPlaceholder);
         artPlaceholder.style.display = 'none';
       };
-      img.src = `${IMG_BASE}${cardNum}.png`;
+      img.src = `${IMG_BASE}${fileNum}.png`;
     }
 
     // ── Tear mechanics ──
