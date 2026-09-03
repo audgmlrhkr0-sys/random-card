@@ -681,7 +681,7 @@
     </div>
 
     <div class="action-btns gone" id="actionBtns">
-      <button class="btn-save" id="btnSave" onclick="saveCard()">갤러리에 저장</button>
+      <button class="btn-save" id="btnSave" onclick="saveCard()">이미지 저장</button>
       <button class="btn-retry" onclick="location.reload()">다시 뽑기</button>
     </div>
 
@@ -1088,13 +1088,13 @@
               try{await navigator.share({files:[f],title:'표준 사용법'});showToast('저장 완료');}
               catch(e){if(e.name!=='AbortError')fallbackDl(cvs,fname);}
             } else {fallbackDl(cvs,fname);}
-            btn.disabled=false; btn.textContent='갤러리에 저장';
+            btn.disabled=false; btn.textContent='이미지 저장';
           });
         } else {
           fallbackDl(cvs,fname);
-          btn.disabled=false; btn.textContent='갤러리에 저장';
+          btn.disabled=false; btn.textContent='이미지 저장';
         }
-      } catch {btn.disabled=false; btn.textContent='갤러리에 저장'; showToast('저장 실패. 다시 시도해주세요.');}
+      } catch {btn.disabled=false; btn.textContent='이미지 저장'; showToast('저장 실패. 다시 시도해주세요.');}
     }
 
     function fallbackDl(cvs,fname){const a=document.createElement('a');a.download=fname;a.href=cvs.toDataURL('image/png');a.click();showToast('이미지 저장됨');}
