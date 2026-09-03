@@ -25,8 +25,8 @@
       position: fixed;
       inset: 0;
       background:
-        radial-gradient(ellipse at 20% 20%, rgba(88,28,135,0.15) 0%, transparent 60%),
-        radial-gradient(ellipse at 80% 80%, rgba(30,58,138,0.15) 0%, transparent 60%);
+        radial-gradient(ellipse at 20% 20%, rgba(88,28,135,0.13) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(30,58,138,0.13) 0%, transparent 60%);
       pointer-events: none;
     }
 
@@ -36,14 +36,14 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 28px;
+      gap: 26px;
       padding: 40px 20px;
       width: 100%;
-      max-width: 500px;
+      max-width: 480px;
     }
 
     .title h1 {
-      font-size: 2.2rem;
+      font-size: 2.1rem;
       font-weight: 800;
       background: linear-gradient(135deg, #c084fc, #818cf8, #38bdf8);
       -webkit-background-clip: text;
@@ -55,11 +55,11 @@
     .title p {
       margin-top: 6px;
       color: #94a3b8;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       text-align: center;
     }
 
-    /* QR 영역 */
+    /* QR frame */
     .qr-frame {
       position: relative;
       width: 280px;
@@ -69,7 +69,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: visible;
     }
 
     .qr-frame::before {
@@ -80,78 +79,38 @@
       background-size: 300% 300%;
       border-radius: 19px;
       z-index: -1;
-      animation: borderGlow 3s ease infinite;
+      animation: bdGlow 3s ease infinite;
     }
 
-    @keyframes borderGlow {
-      0%, 100% { background-position: 0% 50%; }
+    @keyframes bdGlow {
+      0%,100% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
     }
 
-    #qrCanvas {
-      border-radius: 10px;
-    }
+    #qrCanvas { border-radius: 10px; }
 
-    .qr-expired {
+    .qr-loading {
       position: absolute;
       inset: 0;
-      background: rgba(0,0,0,0.88);
-      border-radius: 16px;
+      background: #fff;
+      border-radius: 14px;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
     }
 
-    .qr-expired.show {
-      opacity: 1;
-      pointer-events: auto;
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid #e2e8f0;
+      border-top-color: #818cf8;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
     }
 
-    .qr-expired .icon { font-size: 2.5rem; }
-    .qr-expired p { color: #f87171; font-size: 1rem; font-weight: 600; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* 타이머 */
-    .timer-bar-wrap { width: 280px; }
-
-    .timer-text {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 6px;
-    }
-
-    .timer-label { font-size: 0.78rem; color: #94a3b8; }
-
-    .timer-count {
-      font-size: 1.1rem;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .timer-count.ok { color: #4ade80; }
-    .timer-count.warn { color: #fbbf24; }
-    .timer-count.urgent { color: #f87171; }
-
-    .timer-bar {
-      height: 6px;
-      background: #1e293b;
-      border-radius: 99px;
-      overflow: hidden;
-    }
-
-    .timer-fill {
-      height: 100%;
-      border-radius: 99px;
-      transition: width 1s linear, background 0.5s;
-      background: linear-gradient(90deg, #818cf8, #c084fc);
-    }
-
-    /* 버튼 */
-    .btn-refresh {
+    /* Scan button */
+    .btn-scan {
       width: 280px;
       padding: 14px;
       background: linear-gradient(135deg, #7c3aed, #4f46e5);
@@ -163,19 +122,25 @@
       cursor: pointer;
       box-shadow: 0 4px 20px rgba(124,58,237,0.4);
       transition: transform 0.15s, box-shadow 0.15s;
+      text-align: center;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
 
-    .btn-refresh:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,58,237,0.5); }
-    .btn-refresh:active { transform: translateY(0); }
+    .btn-scan:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,58,237,0.5); }
+    .btn-scan:active { transform: translateY(0); }
 
-    /* 구분선 */
+    /* Divider */
     .divider {
       width: 280px;
       display: flex;
       align-items: center;
       gap: 10px;
       color: #475569;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
     }
 
     .divider::before, .divider::after {
@@ -185,24 +150,21 @@
       background: #1e293b;
     }
 
-    /* 테스트 섹션 */
+    /* Test section */
     .test-section {
       width: 280px;
-      background: rgba(30,41,59,0.6);
+      background: rgba(30,41,59,0.5);
       border: 1px solid #334155;
       border-radius: 14px;
-      padding: 16px;
+      padding: 15px;
     }
 
     .test-label {
-      font-size: 0.72rem;
+      font-size: 0.71rem;
       color: #f59e0b;
       font-weight: 600;
       letter-spacing: 0.08em;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      margin-bottom: 11px;
     }
 
     .test-grid {
@@ -212,15 +174,15 @@
     }
 
     .btn-test {
-      padding: 9px 6px;
+      padding: 8px 5px;
       background: #0f172a;
       border: 1px solid #334155;
       border-radius: 8px;
       color: #cbd5e1;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       font-weight: 500;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.13s;
       text-align: center;
     }
 
@@ -229,39 +191,28 @@
     .btn-test.rare {
       border-color: #f59e0b;
       color: #fbbf24;
-      background: rgba(245,158,11,0.1);
+      background: rgba(245,158,11,0.09);
       grid-column: span 3;
     }
 
-    .btn-test.rare:hover { background: rgba(245,158,11,0.2); }
+    .btn-test.rare:hover { background: rgba(245,158,11,0.18); }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="title">
       <h1>🎴 카드깡</h1>
-      <p>QR 코드를 폰으로 스캔해서 카드를 뽑아보세요</p>
+      <p>QR 코드를 폰으로 스캔하면 카드를 뽑을 수 있어요</p>
     </div>
 
     <div class="qr-frame">
-      <canvas id="qrCanvas" width="260" height="260"></canvas>
-      <div class="qr-expired" id="qrExpired">
-        <div class="icon">⏰</div>
-        <p>QR 코드 만료됨</p>
-      </div>
+      <div class="qr-loading" id="qrLoading"><div class="spinner"></div></div>
+      <canvas id="qrCanvas" width="260" height="260" style="display:none"></canvas>
     </div>
 
-    <div class="timer-bar-wrap">
-      <div class="timer-text">
-        <span class="timer-label">남은 시간</span>
-        <span class="timer-count ok" id="timerCount">30</span>
-      </div>
-      <div class="timer-bar">
-        <div class="timer-fill" id="timerFill" style="width:100%"></div>
-      </div>
-    </div>
-
-    <button class="btn-refresh" onclick="generateQR()">🔄 새로 뽑기</button>
+    <a class="btn-scan" href="./card.html" target="_blank">
+      📱 같은 기기에서 열기
+    </a>
 
     <div class="divider">테스트용 미리보기</div>
 
@@ -272,11 +223,9 @@
   </div>
 
   <script>
-    const BASE_URL = 'https://audgmlrhkr0-sys.github.io/random-card';
+    const BASE = 'https://audgmlrhkr0-sys.github.io/random-card';
     const SECRET = 'cgk26_9qM_rnd';
-    const EXPIRE_MS = 30000;
 
-    // 간단한 해시 함수
     function simpleHash(str) {
       let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
       for (let i = 0; i < str.length; i++) {
@@ -289,70 +238,29 @@
       return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
     }
 
-    function makeToken(cardNum, isRare) {
+    function makePreviewToken(cardNum, isRare) {
       const ts = Date.now();
       const payload = `${cardNum}:${isRare ? 1 : 0}:${ts}`;
       const sig = simpleHash(payload + SECRET);
-      const raw = payload + ':' + sig;
-      return btoa(raw).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+      return btoa(payload + ':' + sig).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
     }
 
-    let timerInterval = null;
-    let expiresAt = null;
-
-    async function generateQR() {
-      clearInterval(timerInterval);
-
-      const cardNum = Math.floor(Math.random() * 15) + 1;
-      const isRare = Math.random() < 1 / 50;
-      const token = makeToken(cardNum, isRare);
-      const url = `${BASE_URL}/card.html?t=${token}`;
-
-      expiresAt = Date.now() + EXPIRE_MS;
-
-      document.getElementById('qrExpired').classList.remove('show');
-      document.getElementById('timerCount').textContent = '30';
-      document.getElementById('timerCount').className = 'timer-count ok';
-      document.getElementById('timerFill').style.width = '100%';
-      document.getElementById('timerFill').style.background = 'linear-gradient(90deg, #818cf8, #c084fc)';
-
-      const canvas = document.getElementById('qrCanvas');
-      await QRCode.toCanvas(canvas, url, {
-        width: 260,
-        margin: 2,
-        errorCorrectionLevel: 'M',
-        color: { dark: '#1a1a2e', light: '#ffffff' }
-      });
-
-      startTimer();
-    }
-
-    function startTimer() {
-      clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        const remaining = Math.max(0, expiresAt - Date.now());
-        const secs = Math.ceil(remaining / 1000);
-        const pct = (remaining / EXPIRE_MS) * 100;
-
-        const countEl = document.getElementById('timerCount');
-        const fillEl = document.getElementById('timerFill');
-
-        countEl.textContent = secs;
-        fillEl.style.width = pct + '%';
-
-        if (secs <= 10) {
-          countEl.className = 'timer-count urgent';
-          fillEl.style.background = 'linear-gradient(90deg, #ef4444, #f97316)';
-        } else if (secs <= 20) {
-          countEl.className = 'timer-count warn';
-          fillEl.style.background = 'linear-gradient(90deg, #f59e0b, #eab308)';
-        }
-
-        if (remaining <= 0) {
-          clearInterval(timerInterval);
-          document.getElementById('qrExpired').classList.add('show');
-        }
-      }, 200);
+    async function buildQR() {
+      const cvs = document.getElementById('qrCanvas');
+      const loading = document.getElementById('qrLoading');
+      try {
+        // QR just points to card.html — randomness happens on load
+        await QRCode.toCanvas(cvs, `${BASE}/card.html`, {
+          width: 260,
+          margin: 2,
+          errorCorrectionLevel: 'M',
+          color: { dark: '#1a1a2e', light: '#ffffff' }
+        });
+        cvs.style.display = 'block';
+        loading.style.display = 'none';
+      } catch (e) {
+        loading.innerHTML = '<p style="color:#f87171;font-size:0.8rem;padding:16px;text-align:center">QR 생성 실패</p>';
+      }
     }
 
     function buildTestButtons() {
@@ -362,23 +270,23 @@
         btn.className = 'btn-test';
         btn.textContent = `카드 ${i}`;
         btn.onclick = () => {
-          const token = makeToken(i, false);
-          window.open(`${BASE_URL}/card.html?t=${token}&preview=1`, '_blank');
+          const t = makePreviewToken(i, false);
+          window.open(`${BASE}/card.html?t=${t}&preview=1`, '_blank');
         };
         grid.appendChild(btn);
       }
-      const rareBtn = document.createElement('button');
-      rareBtn.className = 'btn-test rare';
-      rareBtn.textContent = '✨ 레어 카드 확인';
-      rareBtn.onclick = () => {
-        const token = makeToken(1, true);
-        window.open(`${BASE_URL}/card.html?t=${token}&preview=1`, '_blank');
+      const rare = document.createElement('button');
+      rare.className = 'btn-test rare';
+      rare.textContent = '✨ 레어 카드 확인';
+      rare.onclick = () => {
+        const t = makePreviewToken(1, true);
+        window.open(`${BASE}/card.html?t=${t}&preview=1`, '_blank');
       };
-      grid.appendChild(rareBtn);
+      grid.appendChild(rare);
     }
 
+    buildQR();
     buildTestButtons();
-    generateQR();
   </script>
 </body>
 </html>

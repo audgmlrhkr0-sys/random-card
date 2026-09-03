@@ -2,44 +2,40 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>카드 뽑기 🎴</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
-      min-height: 100vh;
+    html, body {
+      height: 100%;
+      overflow: hidden;
       background: #0d0d1a;
-      color: #fff;
-      font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      touch-action: none;
+    }
+
+    body {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      overflow-x: hidden;
-      -webkit-tap-highlight-color: transparent;
       user-select: none;
+      -webkit-user-select: none;
+      font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      color: #fff;
     }
 
-    .bg-glow {
+    /* radial glow bg */
+    body::before {
+      content: '';
       position: fixed;
       inset: 0;
+      background: radial-gradient(ellipse at 50% 50%, rgba(100,30,200,0.1) 0%, transparent 70%);
       pointer-events: none;
     }
 
-    .bg-glow::before {
-      content: '';
-      position: absolute;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 70%);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    /* ── 로딩 / 에러 ── */
-    .screen {
+    /* ── Error / Loading screens ── */
+    .overlay-screen {
       position: fixed;
       inset: 0;
       display: flex;
@@ -47,14 +43,14 @@
       align-items: center;
       justify-content: center;
       gap: 16px;
-      z-index: 10;
+      z-index: 50;
+      background: #0d0d1a;
     }
 
-    .screen.hidden { display: none; }
+    .overlay-screen.gone { display: none; }
 
     .spinner {
-      width: 48px;
-      height: 48px;
+      width: 44px; height: 44px;
       border: 3px solid rgba(255,255,255,0.1);
       border-top-color: #c084fc;
       border-radius: 50%;
@@ -63,50 +59,55 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .screen p { color: #94a3b8; font-size: 0.95rem; }
-    .error-icon { font-size: 3rem; }
-
-    .error-msg {
-      font-size: 1.05rem;
+    .err-icon { font-size: 3rem; }
+    .err-msg {
+      font-size: 1rem;
       font-weight: 700;
       color: #f87171;
       text-align: center;
-      max-width: 260px;
-      line-height: 1.6;
       white-space: pre-line;
+      line-height: 1.6;
+      max-width: 260px;
     }
 
-    .btn-back {
-      margin-top: 8px;
-      padding: 12px 28px;
+    .btn-close {
+      margin-top: 6px;
+      padding: 11px 28px;
       background: #1e293b;
       border: 1px solid #334155;
-      border-radius: 12px;
+      border-radius: 11px;
       color: #cbd5e1;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 600;
       cursor: pointer;
     }
 
-    /* ── 메인 ── */
+    /* ── Main stage ── */
     .main {
       position: relative;
-      z-index: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 28px;
-      padding: 40px 20px 60px;
-      width: 100%;
+      gap: 20px;
     }
 
-    .main.hidden { display: none; }
+    .main.gone { display: none; }
 
-    /* ── 카드 3D 플립 ── */
-    .card-scene {
-      perspective: 1000px;
-      width: 300px;
-      height: 420px;
+    /* ── Stage (perspective container) ── */
+    .stage {
+      position: relative;
+      width: 260px;
+      height: 380px;
+      perspective: 900px;
+    }
+
+    /* ── Card behind pack ── */
+    .card-container {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transform: scale(0.86) translateY(18px);
+      pointer-events: none;
     }
 
     .card-flipper {
@@ -114,132 +115,85 @@
       height: 100%;
       position: relative;
       transform-style: preserve-3d;
-      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform 0.75s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .card-flipper.flipped { transform: rotateY(180deg); }
 
-    .card-back, .card-front {
+    .card-face {
       position: absolute;
       inset: 0;
-      border-radius: 18px;
+      border-radius: 16px;
       backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
     }
 
-    /* 뒷면 */
-    .card-back {
-      background: linear-gradient(135deg, #1e1b4b, #312e81, #1e1b4b);
-      border: 2px solid rgba(129,140,248,0.4);
+    /* Card back */
+    .c-back {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+      border: 2px solid rgba(129,140,248,0.5);
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
     }
 
-    .card-back-inner {
-      width: 260px;
-      height: 380px;
-      border: 1px solid rgba(129,140,248,0.2);
-      border-radius: 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      background: repeating-linear-gradient(
-        45deg,
-        rgba(129,140,248,0.04) 0px, rgba(129,140,248,0.04) 1px,
-        transparent 1px, transparent 12px
-      );
+    .c-back::after {
+      content: '🎴';
+      font-size: 3.2rem;
+      filter: drop-shadow(0 0 20px rgba(192,132,252,0.7));
     }
 
-    .card-back-logo {
-      font-size: 3.5rem;
-      animation: cardPulse 2s ease-in-out infinite;
-    }
-
-    @keyframes cardPulse {
-      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(192,132,252,0.6)); }
-      50% { transform: scale(1.05); filter: drop-shadow(0 0 32px rgba(192,132,252,0.9)); }
-    }
-
-    .card-back-text {
-      color: rgba(129,140,248,0.8);
-      font-size: 0.85rem;
-      font-weight: 600;
-      letter-spacing: 0.15em;
-    }
-
-    .tap-hint {
-      position: absolute;
-      bottom: 16px;
-      font-size: 0.78rem;
-      color: rgba(148,163,184,0.7);
-      animation: blink 1.5s ease-in-out infinite;
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 0.4; }
-      50% { opacity: 1; }
-    }
-
-    /* 앞면 */
-    .card-front {
+    /* Card front */
+    .c-front {
       transform: rotateY(180deg);
       overflow: hidden;
-      background: #0f172a;
     }
 
-    /* 일반 테두리 */
-    .card-border {
+    /* Normal card border animation */
+    .card-border-normal {
       position: absolute;
       inset: 0;
-      border-radius: 18px;
+      border-radius: 16px;
       padding: 3px;
       background: linear-gradient(135deg, #a78bfa, #6366f1, #38bdf8, #a78bfa);
       background-size: 300% 300%;
-      animation: borderRotate 4s linear infinite;
+      animation: bdRotate 4s linear infinite;
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: destination-out;
       mask-composite: exclude;
+      -webkit-mask-composite: destination-out;
     }
 
-    @keyframes borderRotate {
+    @keyframes bdRotate {
       0% { background-position: 0% 0%; }
       100% { background-position: 300% 300%; }
     }
 
-    /* 레어 테두리 */
-    .rare-border {
+    /* Rare card border */
+    .card-border-rare {
       position: absolute;
       inset: 0;
-      border-radius: 18px;
+      border-radius: 16px;
       padding: 3px;
-      background: linear-gradient(135deg, #fbbf24, #f59e0b, #ef4444, #ec4899, #8b5cf6, #3b82f6, #06b6d4, #10b981, #fbbf24);
+      background: linear-gradient(135deg, #fbbf24, #ef4444, #ec4899, #8b5cf6, #06b6d4, #fbbf24);
       background-size: 400% 400%;
-      animation: rainbowBorder 2s linear infinite;
+      animation: rainbowBd 2s linear infinite;
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: destination-out;
       mask-composite: exclude;
+      -webkit-mask-composite: destination-out;
       display: none;
     }
 
-    @keyframes rainbowBorder {
+    @keyframes rainbowBd {
       0% { background-position: 0% 50%; }
       100% { background-position: 200% 50%; }
     }
 
-    /* 레어 홀로그램 */
+    /* Rare holo overlay */
     .rare-holo {
       position: absolute;
       inset: 3px;
-      border-radius: 15px;
-      background: linear-gradient(
-        125deg,
-        transparent 20%, rgba(255,255,255,0.04) 35%,
-        rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 65%,
-        transparent 80%
-      );
+      border-radius: 13px;
+      background: linear-gradient(125deg, transparent 20%, rgba(255,255,255,0.04) 35%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.04) 65%, transparent 80%);
       background-size: 200% 200%;
       animation: holoShift 3s ease-in-out infinite alternate;
       pointer-events: none;
@@ -252,7 +206,7 @@
       100% { background-position: 100% 100%; }
     }
 
-    /* 스파클 */
+    /* Sparkles */
     .sparkles {
       position: absolute;
       inset: 0;
@@ -264,80 +218,58 @@
     .sparkle {
       position: absolute;
       border-radius: 50%;
-      animation: sparkleAnim var(--dur, 1.5s) ease-in-out var(--delay, 0s) infinite;
+      animation: sparkAnim var(--dur, 1.5s) ease-in-out var(--delay, 0s) infinite;
       background: var(--color, #fff);
       box-shadow: 0 0 6px var(--color, #fff);
     }
 
-    @keyframes sparkleAnim {
-      0% { transform: scale(0) rotate(0deg); opacity: 0; }
+    @keyframes sparkAnim {
+      0% { transform: scale(0); opacity: 0; }
       20% { opacity: 1; }
       50% { transform: scale(1) rotate(180deg); opacity: 0.8; }
-      80% { opacity: 0.2; }
-      100% { transform: scale(0) rotate(360deg) translate(var(--tx,0), var(--ty,0)); opacity: 0; }
+      80% { opacity: 0.3; }
+      100% { transform: scale(0) rotate(360deg) translate(var(--tx,0px), var(--ty,0px)); opacity: 0; }
     }
 
-    /* 코너 장식 */
-    .corner {
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      z-index: 3;
-    }
-
-    .corner-tl { top: 10px; left: 10px; border-top: 2px solid; border-left: 2px solid; border-radius: 3px 0 0 0; }
-    .corner-tr { top: 10px; right: 10px; border-top: 2px solid; border-right: 2px solid; border-radius: 0 3px 0 0; }
-    .corner-bl { bottom: 10px; left: 10px; border-bottom: 2px solid; border-left: 2px solid; border-radius: 0 0 0 3px; }
-    .corner-br { bottom: 10px; right: 10px; border-bottom: 2px solid; border-right: 2px solid; border-radius: 0 0 3px 0; }
-
-    .normal-corners .corner { border-color: rgba(139,92,246,0.6); }
-    .rare-corners .corner { border-color: rgba(251,191,36,0.8); }
-
-    /* 카드 내용 */
-    .card-content {
+    /* Card content layout */
+    .card-inner-content {
       position: relative;
       z-index: 2;
       height: 100%;
       display: flex;
       flex-direction: column;
-      padding: 14px;
-      gap: 10px;
+      padding: 13px;
+      gap: 9px;
     }
 
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    .card-header { display: flex; justify-content: space-between; align-items: center; }
 
-    .card-num {
-      font-size: 0.72rem;
+    .cn-label {
+      font-size: 0.7rem;
       font-weight: 700;
       letter-spacing: 0.1em;
-      color: rgba(255,255,255,0.45);
+      color: rgba(255,255,255,0.4);
     }
 
     .rare-badge {
-      display: none;
-      padding: 3px 8px;
+      padding: 2px 8px;
       background: linear-gradient(90deg, #fbbf24, #f59e0b);
-      border-radius: 6px;
-      font-size: 0.68rem;
+      border-radius: 5px;
+      font-size: 0.66rem;
       font-weight: 800;
       color: #1a0a00;
-      letter-spacing: 0.08em;
+      display: none;
       animation: badgeGlow 1.5s ease-in-out infinite alternate;
     }
 
     @keyframes badgeGlow {
-      from { box-shadow: 0 0 8px rgba(251,191,36,0.5); }
+      from { box-shadow: 0 0 6px rgba(251,191,36,0.5); }
       to { box-shadow: 0 0 18px rgba(251,191,36,0.9); }
     }
 
-    /* 아트워크 */
     .artwork-area {
       flex: 1;
-      border-radius: 10px;
+      border-radius: 9px;
       overflow: hidden;
       display: flex;
       align-items: center;
@@ -346,72 +278,258 @@
     }
 
     .artwork-area img {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       object-fit: cover;
     }
 
-    .artwork-placeholder {
-      width: 100%;
-      height: 100%;
+    .art-placeholder {
+      width: 100%; height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 6px;
     }
 
-    .artwork-num {
-      font-size: 3rem;
+    .art-num {
+      font-size: 2.8rem;
       font-weight: 800;
-      opacity: 0.15;
+      opacity: 0.13;
     }
 
-    .artwork-label {
-      font-size: 0.82rem;
-      opacity: 0.45;
-      letter-spacing: 0.05em;
+    .art-lbl {
+      font-size: 0.78rem;
+      opacity: 0.4;
+      letter-spacing: 0.04em;
     }
 
-    .card-footer { padding: 4px 0 2px; }
+    .card-footer { padding: 3px 0 1px; }
 
     .card-title {
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       font-weight: 700;
       color: rgba(255,255,255,0.9);
       text-align: center;
     }
 
     .card-series {
-      font-size: 0.7rem;
-      color: rgba(255,255,255,0.35);
+      font-size: 0.67rem;
+      color: rgba(255,255,255,0.32);
       text-align: center;
       margin-top: 2px;
     }
 
-    /* 흔들기 */
-    @keyframes shake {
-      0%, 100% { transform: rotate(0deg); }
-      20% { transform: rotate(-3deg); }
-      40% { transform: rotate(3deg); }
-      60% { transform: rotate(-2deg); }
-      80% { transform: rotate(2deg); }
+    .c-corner {
+      position: absolute;
+      width: 18px; height: 18px;
+      z-index: 3;
     }
 
-    .card-flipper.shaking { animation: shake 0.4s ease-in-out; }
+    .c-tl { top: 9px; left: 9px; border-top: 1.5px solid; border-left: 1.5px solid; border-radius: 3px 0 0 0; }
+    .c-tr { top: 9px; right: 9px; border-top: 1.5px solid; border-right: 1.5px solid; border-radius: 0 3px 0 0; }
+    .c-bl { bottom: 9px; left: 9px; border-bottom: 1.5px solid; border-left: 1.5px solid; border-radius: 0 0 0 3px; }
+    .c-br { bottom: 9px; right: 9px; border-bottom: 1.5px solid; border-right: 1.5px solid; border-radius: 0 0 3px 0; }
 
-    /* 버튼 */
-    .action-buttons {
+    /* ── Pack ── */
+    .pack-wrap {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    /* Floating animation when idle */
+    .pack-wrap.floating {
+      animation: packFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes packFloat {
+      0%, 100% { transform: translateY(0) rotate(-0.8deg); }
+      50% { transform: translateY(-7px) rotate(0.8deg); }
+    }
+
+    /* Flap (top part that tears away) */
+    .pack-flap {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 40%;
+      transform-origin: center bottom;
+      transform-style: preserve-3d;
+      will-change: transform;
+      cursor: grab;
+    }
+
+    .pack-flap:active { cursor: grabbing; }
+
+    .flap-front, .flap-back {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 14px 14px 0 0;
+      overflow: hidden;
+    }
+
+    .flap-front {
+      background: linear-gradient(145deg, #2e0d62 0%, #1c0b40 55%, #10103a 100%);
+      border: 2px solid rgba(140,70,230,0.55);
+      border-bottom: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    /* Foil shimmer on flap */
+    .flap-front::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(108deg, transparent 32%, rgba(255,255,255,0.06) 44%, rgba(255,255,255,0.13) 50%, rgba(255,255,255,0.06) 56%, transparent 68%);
+      background-size: 200% 100%;
+      animation: foilMove 2.4s ease-in-out infinite;
+    }
+
+    @keyframes foilMove {
+      0% { background-position: -100% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* Rainbow stripe on flap */
+    .flap-front::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #c084fc, #818cf8, #38bdf8, #4ade80, #fbbf24, #f87171, #c084fc);
+      background-size: 200% 100%;
+      animation: stripeMove 2s linear infinite;
+    }
+
+    @keyframes stripeMove {
+      0% { background-position: 0% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .flap-back {
+      transform: rotateX(180deg);
+      background: linear-gradient(to bottom, #180820, #0d0518);
+      border: 2px solid rgba(100,40,180,0.3);
+      border-bottom: none;
+    }
+
+    .pack-icon {
+      font-size: 2rem;
+      position: relative;
+      z-index: 1;
+      filter: drop-shadow(0 0 10px rgba(192,132,252,0.7));
+    }
+
+    .pack-name {
+      position: relative;
+      z-index: 1;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      color: rgba(210,170,255,0.95);
+      text-shadow: 0 0 12px rgba(192,132,252,0.7);
+    }
+
+    /* Pack body (bottom part) */
+    .pack-body {
+      position: absolute;
+      top: 40%;
+      left: 0; right: 0; bottom: 0;
+      background: linear-gradient(145deg, #1c0b40 0%, #10103a 55%, #0a0a22 100%);
+      border-radius: 0 0 14px 14px;
+      border: 2px solid rgba(140,70,230,0.55);
+      border-top: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      overflow: hidden;
+      will-change: transform, opacity;
+    }
+
+    .pack-body::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(108deg, transparent 32%, rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 55%, transparent 68%);
+      background-size: 200% 100%;
+      animation: foilMove 2.4s ease-in-out infinite 0.6s;
+    }
+
+    .body-brand {
+      position: relative;
+      z-index: 1;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: rgba(190,140,255,0.8);
+    }
+
+    .body-sub {
+      position: relative;
+      z-index: 1;
+      font-size: 0.65rem;
+      color: rgba(190,140,255,0.45);
+      letter-spacing: 0.05em;
+    }
+
+    /* Tear line (perforated) */
+    .tear-line {
+      position: absolute;
+      left: 0; right: 0;
+      top: calc(40% - 1px);
+      height: 2px;
+      background: repeating-linear-gradient(
+        90deg,
+        rgba(160,100,255,0.9) 0, rgba(160,100,255,0.9) 5px,
+        transparent 5px, transparent 11px
+      );
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    /* ── Drag hint ── */
+    .drag-hint {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: rgba(148,163,184,0.65);
+      font-size: 0.8rem;
+      margin-top: 4px;
+      transition: opacity 0.3s;
+    }
+
+    .hint-arrow {
+      font-size: 1.5rem;
+      animation: bounceUp 1.1s ease-in-out infinite;
+    }
+
+    @keyframes bounceUp {
+      0%, 100% { transform: translateY(0); opacity: 0.5; }
+      50% { transform: translateY(-9px); opacity: 1; }
+    }
+
+    /* ── Action buttons ── */
+    .action-btns {
       display: flex;
       flex-direction: column;
       gap: 10px;
-      width: 300px;
+      width: 260px;
+      transition: opacity 0.3s, transform 0.3s;
     }
 
-    .action-buttons.hidden { display: none; }
+    .action-btns.gone { display: none; }
 
     .btn-save {
-      padding: 15px;
+      padding: 14px;
       background: linear-gradient(135deg, #7c3aed, #4f46e5);
       border: none;
       border-radius: 12px;
@@ -423,17 +541,17 @@
       transition: transform 0.15s, box-shadow 0.15s;
     }
 
-    .btn-save:hover { transform: translateY(-2px); }
+    .btn-save:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,58,237,0.5); }
     .btn-save:active { transform: translateY(0); }
-    .btn-save:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-save:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 
     .btn-retry {
-      padding: 13px;
+      padding: 12px;
       background: transparent;
       border: 1px solid #334155;
       border-radius: 12px;
       color: #94a3b8;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.15s;
@@ -441,17 +559,17 @@
 
     .btn-retry:hover { border-color: #64748b; color: #e2e8f0; }
 
-    /* 토스트 */
+    /* ── Toast ── */
     .toast {
       position: fixed;
-      bottom: 40px;
+      bottom: 36px;
       left: 50%;
-      transform: translateX(-50%) translateY(20px);
+      transform: translateX(-50%) translateY(14px);
       background: #1e293b;
       border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 12px 24px;
-      font-size: 0.9rem;
+      border-radius: 11px;
+      padding: 11px 22px;
+      font-size: 0.88rem;
       color: #4ade80;
       font-weight: 600;
       opacity: 0;
@@ -465,81 +583,111 @@
   </style>
 </head>
 <body>
-  <div class="bg-glow"></div>
 
-  <!-- 로딩 -->
-  <div class="screen" id="screenLoading">
+  <!-- Loading -->
+  <div class="overlay-screen" id="scrLoading">
     <div class="spinner"></div>
-    <p>카드를 불러오는 중...</p>
   </div>
 
-  <!-- 에러 -->
-  <div class="screen hidden" id="screenError">
-    <div class="error-icon" id="errorIcon">❌</div>
-    <div class="error-msg" id="errorMsg"></div>
-    <button class="btn-back" onclick="window.close()">← 닫기</button>
+  <!-- Error -->
+  <div class="overlay-screen gone" id="scrError">
+    <div class="err-icon" id="errIcon">❌</div>
+    <div class="err-msg" id="errMsg"></div>
+    <button class="btn-close" onclick="window.close()">← 닫기</button>
   </div>
 
-  <!-- 메인 -->
-  <div class="main hidden" id="screenMain">
-    <div class="card-scene">
-      <div class="card-flipper" id="cardFlipper">
+  <!-- Main -->
+  <div class="main gone" id="scrMain">
 
-        <!-- 뒷면 -->
-        <div class="card-back" id="cardBack" onclick="openCard()">
-          <div class="card-back-inner">
-            <div class="card-back-logo">🎴</div>
-            <div class="card-back-text">CARD GACHA</div>
-          </div>
-          <div class="tap-hint">탭해서 카드 열기</div>
-        </div>
+    <!-- Stage (perspective applied here) -->
+    <div class="stage" id="stage">
 
-        <!-- 앞면 -->
-        <div class="card-front" id="cardFront">
-          <div class="card-border" id="normalBorder"></div>
-          <div class="rare-border" id="rareBorder"></div>
-          <div class="rare-holo" id="rareHolo"></div>
-          <div class="sparkles" id="sparkles"></div>
+      <!-- Card (revealed after tear) -->
+      <div class="card-container" id="cardContainer">
+        <div class="card-flipper" id="cardFlipper">
 
-          <div class="corner corner-tl"></div>
-          <div class="corner corner-tr"></div>
-          <div class="corner corner-bl"></div>
-          <div class="corner corner-br"></div>
+          <!-- Back face -->
+          <div class="card-face c-back"></div>
 
-          <div class="card-content">
-            <div class="card-header">
-              <span class="card-num" id="cardNumLabel">#001</span>
-              <span class="rare-badge" id="rareBadge">✨ RARE</span>
-            </div>
-            <div class="artwork-area" id="artworkArea">
-              <div class="artwork-placeholder" id="artPlaceholder">
-                <div class="artwork-num" id="artNum">1</div>
-                <div class="artwork-label">작품 준비 중</div>
+          <!-- Front face -->
+          <div class="card-face c-front" id="cardFront">
+            <div class="card-border-normal" id="normalBd"></div>
+            <div class="card-border-rare" id="rareBd"></div>
+            <div class="rare-holo" id="rareHolo"></div>
+            <div class="sparkles" id="sparkles"></div>
+
+            <div class="c-corner c-tl"></div>
+            <div class="c-corner c-tr"></div>
+            <div class="c-corner c-bl"></div>
+            <div class="c-corner c-br"></div>
+
+            <div class="card-inner-content">
+              <div class="card-header">
+                <span class="cn-label" id="cnLabel">#001</span>
+                <span class="rare-badge" id="rareBadge">✨ RARE</span>
+              </div>
+              <div class="artwork-area" id="artworkArea">
+                <div class="art-placeholder">
+                  <div class="art-num" id="artNum">1</div>
+                  <div class="art-lbl">작품 준비 중</div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <div class="card-title" id="cardTitle">작품 1</div>
+                <div class="card-series" id="cardSeries">카드깡 컬렉션 · 2026</div>
               </div>
             </div>
-            <div class="card-footer">
-              <div class="card-title" id="cardTitle">작품 1</div>
-              <div class="card-series" id="cardSeries">카드깡 컬렉션 · 2026</div>
-            </div>
           </div>
+
+        </div>
+      </div>
+
+      <!-- Pack (on top of card) -->
+      <div class="pack-wrap floating" id="packWrap">
+
+        <!-- Flap -->
+        <div class="pack-flap" id="packFlap">
+          <div class="flap-front">
+            <div class="pack-icon">🎴</div>
+            <div class="pack-name">CARD GACHA</div>
+          </div>
+          <div class="flap-back"></div>
         </div>
 
+        <!-- Body -->
+        <div class="pack-body" id="packBody">
+          <div class="body-brand">카드깡</div>
+          <div class="body-sub">컬렉션 · 2026 · 15종</div>
+        </div>
+
+        <!-- Tear line -->
+        <div class="tear-line" id="tearLine"></div>
       </div>
+
+    </div><!-- /stage -->
+
+    <!-- Drag hint -->
+    <div class="drag-hint" id="dragHint">
+      <div class="hint-arrow">↑</div>
+      <span>위로 당겨서 뜯기</span>
     </div>
 
-    <div class="action-buttons hidden" id="actionButtons">
+    <!-- Buttons (hidden until reveal) -->
+    <div class="action-btns gone" id="actionBtns">
       <button class="btn-save" id="btnSave" onclick="saveCard()">📥 갤러리에 저장</button>
-      <button class="btn-retry" onclick="goRetry()">↩ 다시하기 (재스캔)</button>
+      <button class="btn-retry" onclick="location.reload()">🔄 다시 뽑기</button>
     </div>
-  </div>
+
+  </div><!-- /main -->
 
   <div class="toast" id="toast"></div>
 
   <script>
+    // ── Card data ──────────────────────────────────────────────
     const SECRET = 'cgk26_9qM_rnd';
     const EXPIRE_MS = 30000;
 
-    const cardGradients = [
+    const CARD_GRADIENTS = [
       ['#0f2027','#203a43','#2c5364'],
       ['#1a0533','#3a0551','#6b0080'],
       ['#0d1b2a','#1b4332','#2d6a4f'],
@@ -569,294 +717,341 @@
       return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
     }
 
-    function parseToken(token) {
+    function parseToken(t) {
       try {
-        const pad = token.length % 4;
-        const padded = token + (pad ? '='.repeat(4 - pad) : '');
-        const decoded = atob(padded.replace(/-/g, '+').replace(/_/g, '/'));
-        const parts = decoded.split(':');
-        if (parts.length !== 4) return null;
-        const [cn, ir, ts, sig] = parts;
-        const payload = `${cn}:${ir}:${ts}`;
-        if (simpleHash(payload + SECRET) !== sig) return null;
+        const pad = t.length % 4;
+        const decoded = atob((t + (pad ? '='.repeat(4 - pad) : '')).replace(/-/g,'+').replace(/_/g,'/'));
+        const [cn, ir, ts, sig] = decoded.split(':');
+        if (simpleHash(`${cn}:${ir}:${ts}` + SECRET) !== sig) return null;
         return { cardNum: parseInt(cn), isRare: ir === '1', ts: parseInt(ts) };
       } catch { return null; }
     }
 
+    // ── State ──────────────────────────────────────────────────
     let cardData = null;
-    let cardOpened = false;
+    let tearDone = false;
+    let dragStartY = null;
+    let isDragging = false;
+    let currentProgress = 0;
+    const DRAG_FULL = 160; // px for 100% tear
 
-    function showError(icon, msg) {
-      document.getElementById('screenLoading').classList.add('hidden');
-      document.getElementById('screenError').classList.remove('hidden');
-      document.getElementById('errorIcon').textContent = icon;
-      document.getElementById('errorMsg').textContent = msg;
-    }
+    // ── DOM refs ───────────────────────────────────────────────
+    const scrLoading  = document.getElementById('scrLoading');
+    const scrError    = document.getElementById('scrError');
+    const scrMain     = document.getElementById('scrMain');
+    const packWrap    = document.getElementById('packWrap');
+    const packFlap    = document.getElementById('packFlap');
+    const packBody    = document.getElementById('packBody');
+    const tearLine    = document.getElementById('tearLine');
+    const dragHint    = document.getElementById('dragHint');
+    const cardContainer = document.getElementById('cardContainer');
+    const cardFlipper = document.getElementById('cardFlipper');
+    const cardFront   = document.getElementById('cardFront');
+    const actionBtns  = document.getElementById('actionBtns');
+    const sparklesEl  = document.getElementById('sparkles');
 
+    // ── Setup card visuals ─────────────────────────────────────
     function setupCard(cardNum, isRare) {
       cardData = { cardNum, isRare };
-      const idx = (cardNum - 1) % cardGradients.length;
-      const [c1, c2, c3] = cardGradients[idx];
-      const front = document.getElementById('cardFront');
+      const [c1, c2, c3] = CARD_GRADIENTS[(cardNum - 1) % CARD_GRADIENTS.length];
 
       if (isRare) {
-        front.style.background = `linear-gradient(135deg, #0a0510, #150a20, #0a1520)`;
-        document.getElementById('normalBorder').style.display = 'none';
-        document.getElementById('rareBorder').style.display = 'block';
+        cardFront.style.background = 'linear-gradient(135deg,#0a0510,#150a20,#0a1520)';
+        document.getElementById('rareBd').style.display = 'block';
+        document.getElementById('normalBd').style.display = 'none';
         document.getElementById('rareHolo').style.display = 'block';
         document.getElementById('rareBadge').style.display = 'block';
         document.getElementById('artNum').style.color = '#fbbf24';
         document.getElementById('cardSeries').style.color = '#fbbf24';
         document.getElementById('cardSeries').textContent = '✨ RARE 카드깡 컬렉션 · 2026';
-        // 코너 색상
-        front.querySelectorAll('.corner').forEach(c => c.style.borderColor = 'rgba(251,191,36,0.8)');
+        cardFront.querySelectorAll('.c-corner').forEach(c => c.style.borderColor = 'rgba(251,191,36,0.8)');
+        document.getElementById('artworkArea').style.background = `linear-gradient(135deg,#0a0518cc,#100820cc)`;
       } else {
-        front.style.background = `linear-gradient(135deg, ${c1}, ${c2}, ${c3})`;
-        front.querySelectorAll('.corner').forEach(c => c.style.borderColor = 'rgba(139,92,246,0.6)');
+        cardFront.style.background = `linear-gradient(135deg,${c1},${c2},${c3})`;
+        cardFront.querySelectorAll('.c-corner').forEach(c => c.style.borderColor = 'rgba(139,92,246,0.6)');
+        document.getElementById('artworkArea').style.background = `linear-gradient(135deg,${c1}cc,${c3}cc)`;
       }
 
-      document.getElementById('artworkArea').style.background = `linear-gradient(135deg, ${c1}cc, ${c3}cc)`;
-      document.getElementById('cardNumLabel').textContent = `#${String(cardNum).padStart(3, '0')}`;
+      document.getElementById('cnLabel').textContent = `#${String(cardNum).padStart(3,'0')}`;
       document.getElementById('artNum').textContent = cardNum;
       document.getElementById('cardTitle').textContent = `작품 ${cardNum}`;
     }
 
-    function openCard() {
-      if (cardOpened) return;
-      cardOpened = true;
+    // ── Tear mechanics ─────────────────────────────────────────
+    function applyTear(p) {
+      // Rotate flap backward
+      const angle = p * 172;
+      packFlap.style.transform = `rotateX(-${angle}deg)`;
 
-      const flipper = document.getElementById('cardFlipper');
-      flipper.classList.add('shaking');
+      // Flap fades as it passes 75%
+      packFlap.style.opacity = p > 0.72 ? String(1 - (p - 0.72) / 0.28) : '1';
 
-      setTimeout(() => {
-        flipper.classList.remove('shaking');
-        flipper.classList.add('flipped');
+      // Body slides down slightly and fades after 60%
+      packBody.style.transform = `translateY(${p * 12}px)`;
+      if (p > 0.55) {
+        packBody.style.opacity = String(1 - (p - 0.55) / 0.45);
+      }
 
-        setTimeout(() => {
-          document.getElementById('cardBack').style.pointerEvents = 'none';
-          if (cardData.isRare) spawnSparkles();
-          document.getElementById('actionButtons').classList.remove('hidden');
-        }, 800);
-      }, 400);
+      // Tear line fades
+      tearLine.style.opacity = String(Math.max(0, 1 - p * 2));
+
+      // Card appears from behind
+      cardContainer.style.opacity = String(Math.min(1, p * 1.6));
+      cardContainer.style.transform = `scale(${0.86 + p * 0.14}) translateY(${(1 - p) * 18}px)`;
+
+      // Hint fades quickly
+      dragHint.style.opacity = String(Math.max(0, 1 - p * 4));
     }
 
+    function completeTear() {
+      tearDone = true;
+      packWrap.classList.remove('floating');
+
+      // Flap flies away
+      packFlap.style.transition = 'transform 0.48s ease-out, opacity 0.3s ease-out';
+      packFlap.style.transform = 'rotateX(-195deg) translateY(-50px)';
+      packFlap.style.opacity = '0';
+
+      // Body drops away
+      packBody.style.transition = 'transform 0.4s ease-in, opacity 0.32s ease-out';
+      packBody.style.transform = 'translateY(90px) scale(0.94)';
+      packBody.style.opacity = '0';
+
+      tearLine.style.transition = 'opacity 0.2s';
+      tearLine.style.opacity = '0';
+      dragHint.style.opacity = '0';
+
+      // Reveal card
+      setTimeout(() => {
+        cardContainer.style.transition = 'transform 0.55s cubic-bezier(0.34,1.56,0.64,1), opacity 0.28s';
+        cardContainer.style.opacity = '1';
+        cardContainer.style.transform = 'scale(1) translateY(0)';
+
+        // Auto-flip card face up
+        setTimeout(() => {
+          cardFlipper.classList.add('flipped');
+          if (cardData.isRare) setTimeout(spawnSparkles, 650);
+          setTimeout(() => {
+            actionBtns.classList.remove('gone');
+          }, 900);
+        }, 480);
+      }, 220);
+    }
+
+    function snapBack() {
+      const dur = '0.42s cubic-bezier(0.34,1.56,0.64,1)';
+      packFlap.style.transition = `transform ${dur}`;
+      packFlap.style.transform = 'rotateX(0deg)';
+      packFlap.style.opacity = '1';
+      packBody.style.transition = `transform ${dur}, opacity ${dur}`;
+      packBody.style.transform = 'translateY(0)';
+      packBody.style.opacity = '1';
+      tearLine.style.transition = 'opacity 0.3s';
+      tearLine.style.opacity = '1';
+      cardContainer.style.opacity = '0';
+      cardContainer.style.transform = 'scale(0.86) translateY(18px)';
+      dragHint.style.opacity = '1';
+      currentProgress = 0;
+      setTimeout(() => {
+        packFlap.style.transition = '';
+        packBody.style.transition = '';
+        tearLine.style.transition = '';
+      }, 450);
+    }
+
+    // ── Drag event handlers ────────────────────────────────────
+    function onDragStart(y) {
+      if (tearDone) return;
+      dragStartY = y;
+      isDragging = true;
+      packWrap.classList.remove('floating');
+    }
+
+    function onDragMove(y) {
+      if (!isDragging || tearDone) return;
+      const dy = dragStartY - y;
+      currentProgress = Math.max(0, Math.min(1, dy / DRAG_FULL));
+      applyTear(currentProgress);
+    }
+
+    function onDragEnd() {
+      if (!isDragging || tearDone) return;
+      isDragging = false;
+      if (currentProgress > 0.52) {
+        completeTear();
+      } else {
+        packWrap.classList.add('floating');
+        snapBack();
+      }
+    }
+
+    // Touch
+    document.addEventListener('touchstart', e => onDragStart(e.touches[0].clientY), { passive: true });
+    document.addEventListener('touchmove', e => { e.preventDefault(); onDragMove(e.touches[0].clientY); }, { passive: false });
+    document.addEventListener('touchend', onDragEnd);
+
+    // Mouse
+    document.addEventListener('mousedown', e => onDragStart(e.clientY));
+    document.addEventListener('mousemove', e => onDragMove(e.clientY));
+    document.addEventListener('mouseup', onDragEnd);
+
+    // ── Sparkles ───────────────────────────────────────────────
     function spawnSparkles() {
-      const container = document.getElementById('sparkles');
-      const colors = ['#fbbf24','#f59e0b','#ffffff','#fde68a','#fcd34d','#ef4444','#ec4899'];
-      for (let i = 0; i < 28; i++) {
+      const colors = ['#fbbf24','#f59e0b','#fff','#fde68a','#ef4444','#ec4899'];
+      for (let i = 0; i < 30; i++) {
         const el = document.createElement('div');
         el.className = 'sparkle';
-        const size = Math.random() * 6 + 3;
+        const sz = Math.random() * 6 + 3;
         el.style.cssText = `
-          width:${size}px; height:${size}px;
+          width:${sz}px; height:${sz}px;
           top:${Math.random()*100}%; left:${Math.random()*100}%;
-          --color:${colors[Math.floor(Math.random()*colors.length)]};
-          --dur:${1.2+Math.random()*1.5}s;
+          --color:${colors[~~(Math.random()*colors.length)]};
+          --dur:${1.2+Math.random()*1.6}s;
           --delay:${Math.random()*2}s;
-          --tx:${(Math.random()-0.5)*40}px;
-          --ty:${(Math.random()-0.5)*40}px;
+          --tx:${(Math.random()-.5)*44}px;
+          --ty:${(Math.random()-.5)*44}px;
         `;
-        container.appendChild(el);
+        sparklesEl.appendChild(el);
       }
+    }
+
+    // ── Save card ──────────────────────────────────────────────
+    function drawCanvas() {
+      const { cardNum, isRare } = cardData;
+      const cvs = document.createElement('canvas');
+      cvs.width = 600; cvs.height = 840;
+      const ctx = cvs.getContext('2d');
+      const [c1, c2, c3] = CARD_GRADIENTS[(cardNum - 1) % CARD_GRADIENTS.length];
+      const cx=20, cy=20, cw=560, ch=800, r=32;
+
+      function rr(x,y,w,h,rr) {
+        ctx.beginPath();
+        ctx.moveTo(x+rr,y);
+        ctx.lineTo(x+w-rr,y); ctx.quadraticCurveTo(x+w,y,x+w,y+rr);
+        ctx.lineTo(x+w,y+h-rr); ctx.quadraticCurveTo(x+w,y+h,x+w-rr,y+h);
+        ctx.lineTo(x+rr,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-rr);
+        ctx.lineTo(x,y+rr); ctx.quadraticCurveTo(x,y,x+rr,y);
+        ctx.closePath();
+      }
+
+      ctx.fillStyle='#0d0d1a'; ctx.fillRect(0,0,600,840);
+
+      const bg = ctx.createLinearGradient(cx,cy,cx+cw,cy+ch);
+      if (isRare) { bg.addColorStop(0,'#0a0510'); bg.addColorStop(.5,'#150a20'); bg.addColorStop(1,'#0a1520'); }
+      else { bg.addColorStop(0,c1); bg.addColorStop(.5,c2); bg.addColorStop(1,c3); }
+      ctx.fillStyle=bg; rr(cx,cy,cw,ch,r); ctx.fill();
+
+      const bd = ctx.createLinearGradient(cx,cy,cx+cw,cy+ch);
+      if (isRare) { bd.addColorStop(0,'#fbbf24'); bd.addColorStop(.4,'#ef4444'); bd.addColorStop(.8,'#8b5cf6'); bd.addColorStop(1,'#fbbf24'); }
+      else { bd.addColorStop(0,'#a78bfa'); bd.addColorStop(.5,'#6366f1'); bd.addColorStop(1,'#38bdf8'); }
+      ctx.strokeStyle=bd; ctx.lineWidth=isRare?5:4; rr(cx,cy,cw,ch,r); ctx.stroke();
+
+      const ax=cx+28,ay=cy+80,aw=cw-56,ah=560;
+      const ag=ctx.createLinearGradient(ax,ay,ax+aw,ay+ah);
+      ag.addColorStop(0,isRare?'#0a0518':c1+'cc'); ag.addColorStop(1,isRare?'#100820':c3+'cc');
+      ctx.fillStyle=ag; rr(ax,ay,aw,ah,16); ctx.fill();
+
+      ctx.fillStyle=isRare?'rgba(251,191,36,0.12)':'rgba(255,255,255,0.07)';
+      ctx.font='bold 140px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(cardNum,ax+aw/2,ay+ah/2);
+
+      ctx.fillStyle=isRare?'rgba(251,191,36,0.35)':'rgba(255,255,255,0.22)';
+      ctx.font='28px Arial'; ctx.fillText('작품 준비 중',ax+aw/2,ay+ah/2+90);
+
+      ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='22px Arial'; ctx.textAlign='left';
+      ctx.fillText(`#${String(cardNum).padStart(3,'0')}`,cx+32,cy+48);
+      if (isRare) { ctx.fillStyle='#fbbf24'; ctx.font='bold 22px Arial'; ctx.textAlign='right'; ctx.fillText('✨ RARE',cx+cw-32,cy+48); }
+
+      ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.font='bold 32px Arial'; ctx.textAlign='center';
+      ctx.fillText(`작품 ${cardNum}`,cx+cw/2,cy+ch-80);
+      ctx.fillStyle=isRare?'#fbbf24':'rgba(255,255,255,0.3)'; ctx.font='20px Arial';
+      ctx.fillText(isRare?'✨ RARE 카드깡 컬렉션 · 2026':'카드깡 컬렉션 · 2026',cx+cw/2,cy+ch-44);
+
+      ctx.strokeStyle=isRare?'rgba(251,191,36,0.7)':'rgba(139,92,246,0.6)'; ctx.lineWidth=3;
+      [[cx+14,cy+14,1,1],[cx+cw-14,cy+14,-1,1],[cx+14,cy+ch-14,1,-1],[cx+cw-14,cy+ch-14,-1,-1]].forEach(([x,y,dx,dy])=>{
+        ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+28*dx,y); ctx.moveTo(x,y); ctx.lineTo(x,y+28*dy); ctx.stroke();
+      });
+      return cvs;
     }
 
     async function saveCard() {
       const btn = document.getElementById('btnSave');
-      btn.disabled = true;
-      btn.textContent = '저장 중...';
-
+      btn.disabled = true; btn.textContent = '저장 중...';
       try {
-        const canvas = drawCardCanvas();
+        const cvs = drawCanvas();
         if (navigator.share && navigator.canShare) {
-          canvas.toBlob(async (blob) => {
-            const file = new File([blob], `card_${cardData.cardNum}${cardData.isRare ? '_rare' : ''}.png`, { type: 'image/png' });
-            if (navigator.canShare({ files: [file] })) {
-              try {
-                await navigator.share({ files: [file], title: `카드깡 - 작품 ${cardData.cardNum}` });
-                showToast('✅ 저장 완료!');
-              } catch(e) {
-                if (e.name !== 'AbortError') fallbackDownload(canvas);
-              }
-            } else {
-              fallbackDownload(canvas);
-            }
-            btn.disabled = false;
-            btn.textContent = '📥 갤러리에 저장';
+          cvs.toBlob(async blob => {
+            const f = new File([blob], `card_${cardData.cardNum}${cardData.isRare?'_rare':''}.png`, {type:'image/png'});
+            if (navigator.canShare({files:[f]})) {
+              try { await navigator.share({files:[f], title:`카드깡 - 작품 ${cardData.cardNum}`}); showToast('✅ 저장 완료!'); }
+              catch(e) { if (e.name!=='AbortError') fallbackDl(cvs); }
+            } else { fallbackDl(cvs); }
+            btn.disabled=false; btn.textContent='📥 갤러리에 저장';
           });
         } else {
-          fallbackDownload(canvas);
-          btn.disabled = false;
-          btn.textContent = '📥 갤러리에 저장';
+          fallbackDl(cvs);
+          btn.disabled=false; btn.textContent='📥 갤러리에 저장';
         }
-      } catch(e) {
-        btn.disabled = false;
-        btn.textContent = '📥 갤러리에 저장';
-        showToast('저장 실패. 다시 시도해주세요.');
-      }
+      } catch { btn.disabled=false; btn.textContent='📥 갤러리에 저장'; showToast('저장 실패. 다시 시도해주세요.'); }
     }
 
-    function drawCardCanvas() {
-      const canvas = document.createElement('canvas');
-      canvas.width = 600;
-      canvas.height = 840;
-      const ctx = canvas.getContext('2d');
-      const { cardNum, isRare } = cardData;
-      const idx = (cardNum - 1) % cardGradients.length;
-      const [c1, c2, c3] = cardGradients[idx];
-
-      // 배경
-      ctx.fillStyle = '#0d0d1a';
-      ctx.fillRect(0, 0, 600, 840);
-
-      const cx = 20, cy = 20, cw = 560, ch = 800, r = 32;
-
-      function rr(x, y, w, h, r) {
-        ctx.beginPath();
-        ctx.moveTo(x+r, y);
-        ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
-        ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
-        ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
-        ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y);
-        ctx.closePath();
-      }
-
-      // 카드 배경
-      const bg = ctx.createLinearGradient(cx, cy, cx+cw, cy+ch);
-      if (isRare) {
-        bg.addColorStop(0, '#0a0510'); bg.addColorStop(0.5, '#150a20'); bg.addColorStop(1, '#0a1520');
-      } else {
-        bg.addColorStop(0, c1); bg.addColorStop(0.5, c2); bg.addColorStop(1, c3);
-      }
-      ctx.fillStyle = bg; rr(cx, cy, cw, ch, r); ctx.fill();
-
-      // 테두리
-      const bd = ctx.createLinearGradient(cx, cy, cx+cw, cy+ch);
-      if (isRare) {
-        bd.addColorStop(0, '#fbbf24'); bd.addColorStop(0.33, '#ef4444');
-        bd.addColorStop(0.66, '#8b5cf6'); bd.addColorStop(1, '#fbbf24');
-      } else {
-        bd.addColorStop(0, '#a78bfa'); bd.addColorStop(0.5, '#6366f1'); bd.addColorStop(1, '#38bdf8');
-      }
-      ctx.strokeStyle = bd; ctx.lineWidth = isRare ? 5 : 4;
-      rr(cx, cy, cw, ch, r); ctx.stroke();
-
-      // 아트워크 영역
-      const ax = cx+28, ay = cy+80, aw = cw-56, ah = 560;
-      const ag = ctx.createLinearGradient(ax, ay, ax+aw, ay+ah);
-      ag.addColorStop(0, isRare ? '#0a0518' : c1+'cc');
-      ag.addColorStop(1, isRare ? '#100820' : c3+'cc');
-      ctx.fillStyle = ag; rr(ax, ay, aw, ah, 16); ctx.fill();
-
-      // 번호 플레이스홀더
-      ctx.fillStyle = isRare ? 'rgba(251,191,36,0.12)' : 'rgba(255,255,255,0.07)';
-      ctx.font = 'bold 140px Arial';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(cardNum, ax+aw/2, ay+ah/2);
-
-      ctx.fillStyle = isRare ? 'rgba(251,191,36,0.35)' : 'rgba(255,255,255,0.22)';
-      ctx.font = '28px Arial';
-      ctx.fillText('작품 준비 중', ax+aw/2, ay+ah/2+90);
-
-      // 카드 번호
-      ctx.fillStyle = 'rgba(255,255,255,0.4)';
-      ctx.font = '22px Arial'; ctx.textAlign = 'left';
-      ctx.fillText(`#${String(cardNum).padStart(3,'0')}`, cx+32, cy+48);
-
-      // 레어 배지
-      if (isRare) {
-        ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 22px Arial';
-        ctx.textAlign = 'right';
-        ctx.fillText('✨ RARE', cx+cw-32, cy+48);
-      }
-
-      // 타이틀
-      ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.font = 'bold 32px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(`작품 ${cardNum}`, cx+cw/2, cy+ch-80);
-
-      ctx.fillStyle = isRare ? '#fbbf24' : 'rgba(255,255,255,0.3)';
-      ctx.font = '20px Arial';
-      ctx.fillText(isRare ? '✨ RARE 카드깡 컬렉션 · 2026' : '카드깡 컬렉션 · 2026', cx+cw/2, cy+ch-44);
-
-      // 코너
-      ctx.strokeStyle = isRare ? 'rgba(251,191,36,0.7)' : 'rgba(139,92,246,0.6)';
-      ctx.lineWidth = 3;
-      [[cx+14,cy+14,1,1],[cx+cw-14,cy+14,-1,1],[cx+14,cy+ch-14,1,-1],[cx+cw-14,cy+ch-14,-1,-1]].forEach(([x,y,dx,dy])=>{
-        ctx.beginPath();
-        ctx.moveTo(x,y); ctx.lineTo(x+28*dx,y);
-        ctx.moveTo(x,y); ctx.lineTo(x,y+28*dy);
-        ctx.stroke();
-      });
-
-      return canvas;
-    }
-
-    function fallbackDownload(canvas) {
+    function fallbackDl(cvs) {
       const a = document.createElement('a');
-      a.download = `card_${cardData.cardNum}${cardData.isRare ? '_rare' : ''}.png`;
-      a.href = canvas.toDataURL('image/png');
-      a.click();
+      a.download = `card_${cardData.cardNum}${cardData.isRare?'_rare':''}.png`;
+      a.href = cvs.toDataURL('image/png'); a.click();
       showToast('✅ 이미지 저장됨!');
     }
 
     function showToast(msg) {
       const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 2500);
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2600);
     }
 
-    function goRetry() {
-      window.close();
+    function showError(icon, msg) {
+      scrLoading.classList.add('gone');
+      scrError.classList.remove('gone');
+      document.getElementById('errIcon').textContent = icon;
+      document.getElementById('errMsg').textContent = msg;
     }
 
-    // ── 초기화 ──
+    // ── Init ───────────────────────────────────────────────────
     function init() {
-      const params = new URLSearchParams(window.location.search);
-      const tokenStr = params.get('t');
-      const isPreview = params.get('preview') === '1';
+      const p = new URLSearchParams(window.location.search);
+      const tokenStr = p.get('t');
+      const isPreview = p.get('preview') === '1';
+      let cardNum, isRare;
 
-      if (!tokenStr) {
-        showError('❌', '유효하지 않은 접근입니다.');
-        return;
-      }
-
-      const data = parseToken(tokenStr);
-
-      if (!data) {
-        showError('❌', '유효하지 않은 QR 코드입니다.');
-        return;
-      }
-
-      // 미리보기 모드: 만료/중복 체크 안 함
-      if (!isPreview) {
-        // 만료 확인 (30초)
-        if (Date.now() - data.ts > EXPIRE_MS) {
-          showError('⏰', 'QR 코드가 만료되었습니다.\nQR 코드를 다시 생성해주세요.');
-          return;
+      if (tokenStr) {
+        const data = parseToken(tokenStr);
+        if (data && (isPreview || Date.now() - data.ts <= EXPIRE_MS)) {
+          cardNum = data.cardNum;
+          isRare = data.isRare;
         }
-
-        // 동일 세션 중복 사용 방지
-        const usedKey = `used_${tokenStr}`;
-        if (sessionStorage.getItem(usedKey)) {
-          showError('🔒', '이미 사용된 QR 코드입니다.\nQR 코드를 다시 생성해주세요.');
-          return;
-        }
-        sessionStorage.setItem(usedKey, '1');
       }
 
-      document.getElementById('screenLoading').classList.add('hidden');
-      document.getElementById('screenMain').classList.remove('hidden');
-      setupCard(data.cardNum, data.isRare);
+      // Fallback to random (refresh behavior)
+      if (!cardNum) {
+        cardNum = Math.floor(Math.random() * 15) + 1;
+        isRare = Math.random() < 1 / 50;
+      }
 
-      // 미리보기는 자동 오픈
+      scrLoading.classList.add('gone');
+      scrMain.classList.remove('gone');
+      setupCard(cardNum, isRare);
+
+      // Preview: skip tear, auto-flip
       if (isPreview) {
+        packWrap.style.display = 'none';
+        dragHint.style.display = 'none';
+        cardContainer.style.opacity = '1';
+        cardContainer.style.transform = 'scale(1) translateY(0)';
+        tearDone = true;
         setTimeout(() => {
-          cardOpened = true;
-          document.getElementById('cardFlipper').classList.add('flipped');
-          if (data.isRare) setTimeout(spawnSparkles, 800);
-          document.getElementById('actionButtons').classList.remove('hidden');
-        }, 400);
+          cardFlipper.classList.add('flipped');
+          if (isRare) setTimeout(spawnSparkles, 650);
+          setTimeout(() => actionBtns.classList.remove('gone'), 900);
+        }, 300);
       }
     }
 
