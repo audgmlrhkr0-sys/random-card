@@ -33,18 +33,6 @@
       -webkit-user-select: none;
     }
 
-    /* Glass mixin used throughout */
-    .glass {
-      background: rgba(255,255,255,0.6);
-      -webkit-backdrop-filter: blur(20px) saturate(160%);
-      backdrop-filter: blur(20px) saturate(160%);
-      border: 1px solid rgba(255,255,255,0.85);
-      box-shadow:
-        0 2px 24px rgba(0,0,0,0.07),
-        inset 0 1px 0 rgba(255,255,255,1),
-        inset 0 -1px 0 rgba(0,0,0,0.02);
-    }
-
     /* ── Screens ─────────────────────────────────── */
     .screen {
       position: fixed;
@@ -57,7 +45,6 @@
       z-index: 50;
     }
     .screen.gone { display: none; }
-
     .screen-loading { background: #ededeb; }
 
     .spinner {
@@ -110,14 +97,14 @@
     }
 
     /* ── Main ────────────────────────────────────── */
-    .main { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+    .main { display: flex; flex-direction: column; align-items: center; gap: 20px; }
     .main.gone { display: none; }
 
-    /* ── Stage (perspective) ─────────────────────── */
+    /* ── Stage ───────────────────────────────────── */
     .stage {
       position: relative;
       width: 260px;
-      height: 380px;
+      height: 420px;
       perspective: 900px;
       transform-style: preserve-3d;
     }
@@ -194,7 +181,6 @@
         inset 0 1px 0 rgba(255,255,255,1);
     }
 
-    /* Rare card - green glow */
     .c-front.is-rare {
       border-color: rgba(204,255,0,0.7);
       box-shadow:
@@ -204,7 +190,6 @@
         inset 0 1px 0 rgba(255,255,255,1);
     }
 
-    /* Top accent line */
     .card-top-line {
       position: absolute;
       top: 0; left: 0; right: 0;
@@ -213,7 +198,6 @@
       z-index: 10;
       border-radius: 18px 18px 0 0;
     }
-
     .c-front.is-rare .card-top-line { background: var(--accent); }
 
     /* Rare shimmer */
@@ -268,20 +252,28 @@
       flex-direction: column;
     }
 
-    /* Artwork fills top portion */
+    /* Artwork — fixed height, contain fit */
     .artwork-area {
-      flex: 1;
+      flex: none;
+      height: 54%;
       position: relative;
       overflow: hidden;
       border-radius: 17px 17px 0 0;
-      background: rgba(240,240,238,0.8);
+      background: rgba(244,244,242,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 8px 6px;
     }
 
     .artwork-img {
-      position: absolute;
-      inset: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      border-radius: 4px;
     }
 
     .art-placeholder {
@@ -306,55 +298,54 @@
       letter-spacing: 0.05em;
     }
 
-    /* Frosted glass info strip */
+    /* Frosted glass info strip — scrollable */
     .card-info {
-      padding: 11px 14px 12px;
+      flex: 1;
+      min-height: 0;
+      padding: 10px 13px 12px;
       background: rgba(255,255,255,0.82);
       -webkit-backdrop-filter: blur(16px);
       backdrop-filter: blur(16px);
       border-top: 1px solid rgba(255,255,255,0.7);
-      flex-shrink: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
-    .info-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4px;
-    }
-
-    .cn-label {
-      font-size: 0.64rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      color: rgba(0,0,0,0.35);
-    }
+    /* Scrollbar styling */
+    .card-info::-webkit-scrollbar { width: 3px; }
+    .card-info::-webkit-scrollbar-track { background: transparent; }
+    .card-info::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 2px; }
 
     .rare-badge {
       display: none;
-      font-size: 0.58rem;
+      font-size: 0.56rem;
       font-weight: 700;
       letter-spacing: 0.15em;
       color: var(--text);
       background: var(--accent);
       padding: 2px 7px;
       border-radius: 3px;
+      margin-bottom: 6px;
+      width: fit-content;
     }
 
+    /* Title — bold, prominent */
     .card-title {
-      font-size: 0.86rem;
+      font-size: 0.82rem;
       font-weight: 700;
       color: var(--text);
+      line-height: 1.35;
+      margin-bottom: 5px;
     }
 
-    .card-series {
-      font-size: 0.63rem;
-      color: var(--muted);
-      margin-top: 1px;
-      letter-spacing: 0.03em;
+    /* Caption — small, muted */
+    .card-caption {
+      font-size: 0.6rem;
+      color: rgba(0,0,0,0.5);
+      line-height: 1.65;
     }
 
-    /* Corner accents */
+    /* Corners */
     .c-corner {
       position: absolute;
       width: 14px; height: 14px;
@@ -379,7 +370,6 @@
       50% { transform: translateY(-6px); }
     }
 
-    /* Pack top (tears off upward) */
     .pack-top {
       position: absolute;
       top: 0; left: 0; right: 0;
@@ -390,9 +380,7 @@
       backdrop-filter: blur(18px) saturate(150%);
       border: 1px solid rgba(255,255,255,0.88);
       border-bottom: none;
-      box-shadow:
-        0 -2px 16px rgba(0,0,0,0.04),
-        inset 0 1px 0 rgba(255,255,255,1);
+      box-shadow: 0 -2px 16px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,1);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -403,7 +391,6 @@
       transform-style: preserve-3d;
     }
 
-    /* Green top stripe on pack */
     .pack-top::before {
       content: '';
       position: absolute;
@@ -413,7 +400,6 @@
       border-radius: 18px 18px 0 0;
     }
 
-    /* Glass sheen on pack top */
     .pack-top::after {
       content: '';
       position: absolute;
@@ -423,25 +409,18 @@
     }
 
     .pack-top-name {
-      position: relative;
-      z-index: 1;
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.24em;
-      color: rgba(0,0,0,0.55);
+      position: relative; z-index: 1;
+      font-size: 0.65rem; font-weight: 700;
+      letter-spacing: 0.24em; color: rgba(0,0,0,0.55);
       text-transform: uppercase;
     }
 
     .pack-top-sub {
-      position: relative;
-      z-index: 1;
-      font-size: 0.52rem;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      color: rgba(0,0,0,0.3);
+      position: relative; z-index: 1;
+      font-size: 0.52rem; font-weight: 500;
+      letter-spacing: 0.1em; color: rgba(0,0,0,0.3);
     }
 
-    /* Pack bottom (drops when torn) */
     .pack-bottom {
       position: absolute;
       top: 38%; left: 0; right: 0; bottom: 0;
@@ -451,9 +430,7 @@
       backdrop-filter: blur(18px) saturate(150%);
       border: 1px solid rgba(255,255,255,0.88);
       border-top: none;
-      box-shadow:
-        0 4px 24px rgba(0,0,0,0.07),
-        inset 0 -1px 0 rgba(0,0,0,0.02);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07), inset 0 -1px 0 rgba(0,0,0,0.02);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -463,7 +440,6 @@
       will-change: transform, opacity;
     }
 
-    /* Glass sheen on pack bottom */
     .pack-bottom::after {
       content: '';
       position: absolute;
@@ -473,23 +449,17 @@
     }
 
     .pack-bottom-brand {
-      position: relative;
-      z-index: 1;
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      color: rgba(0,0,0,0.28);
+      position: relative; z-index: 1;
+      font-size: 0.7rem; font-weight: 600;
+      letter-spacing: 0.1em; color: rgba(0,0,0,0.28);
     }
 
     .pack-bottom-year {
-      position: relative;
-      z-index: 1;
+      position: relative; z-index: 1;
       font-size: 0.56rem;
-      letter-spacing: 0.12em;
-      color: rgba(0,0,0,0.16);
+      letter-spacing: 0.12em; color: rgba(0,0,0,0.16);
     }
 
-    /* Perforated tear line */
     .tear-line {
       position: absolute;
       left: 0; right: 0;
@@ -631,16 +601,14 @@
 
     <div class="stage" id="stage">
 
-      <!-- Card (behind pack) -->
+      <!-- Card -->
       <div class="card-container" id="cardContainer">
         <div class="card-flipper" id="cardFlipper">
 
-          <!-- Back face -->
           <div class="card-face c-back">
             <span class="c-back-label">Card Gacha</span>
           </div>
 
-          <!-- Front face -->
           <div class="card-face c-front" id="cardFront">
             <div class="card-top-line"></div>
             <div class="rare-holo" id="rareHolo"></div>
@@ -658,12 +626,9 @@
                 </div>
               </div>
               <div class="card-info">
-                <div class="info-header">
-                  <span class="cn-label" id="cnLabel">#001</span>
-                  <span class="rare-badge" id="rareBadge">RARE</span>
-                </div>
-                <div class="card-title" id="cardTitle">작품 1</div>
-                <div class="card-series" id="cardSeries">카드깡 컬렉션 · 2026</div>
+                <div class="rare-badge" id="rareBadge">RARE</div>
+                <div class="card-title" id="cardTitle"></div>
+                <div class="card-caption" id="cardCaption"></div>
               </div>
             </div>
           </div>
@@ -671,7 +636,7 @@
         </div>
       </div>
 
-      <!-- Pack (tears upward — real bag style) -->
+      <!-- Pack (tears upward) -->
       <div class="pack-wrap floating" id="packWrap">
         <div class="pack-top" id="packTop">
           <div class="pack-top-name">Card Gacha</div>
@@ -686,13 +651,11 @@
 
     </div>
 
-    <!-- Drag hint -->
     <div class="drag-hint" id="dragHint">
       <div class="hint-arrow"></div>
       <span class="hint-text">위로 당겨서 뜯기</span>
     </div>
 
-    <!-- Buttons -->
     <div class="action-btns gone" id="actionBtns">
       <button class="btn-save" id="btnSave" onclick="saveCard()">갤러리에 저장</button>
       <button class="btn-retry" onclick="location.reload()">다시 뽑기</button>
@@ -705,16 +668,97 @@
   <script>
     const SECRET     = 'cgk26_9qM_rnd';
     const EXPIRE_MS  = 30000;
-    const CARD_COUNT = 23;
+    const CARD_COUNT = 19;
     const IMG_BASE   = './images/';
+
+    // ── Artwork data ──────────────────────────────
+    const CARD_DATA = [
+      null, // 0-index placeholder
+      {
+        title: '〈Face of Face-#1〉',
+        caption: '천경우, 2016, 아카이벌 피그먼트 프린트,\n각 113×88cm, 각 3/5,\n국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈Face of Face-#3〉',
+        caption: '천경우, 2016, 아카이벌 피그먼트 프린트,\n각 113×88cm, 각 3/5,\n국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈Face of Face-#5〉',
+        caption: '천경우, 2016, 아카이벌 피그먼트 프린트,\n각 113×88cm, 각 3/5,\n국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈공동고백〉',
+        caption: '고등어, 2021, 2채널 비디오, 10분 37초, loop,\n각 1/2, 국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈Gestures in the Subway 3-39〉',
+        caption: '권순관, 2009, 디지털 C-프린트,\n150×190cm, 2/7,\n국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈Ruler No. 0〉',
+        caption: '김승주, 2012, 나무에 자개, 페인트,\n150x60x35cm, 20kg / 150x110x35cm, 34.6kg,\n1/3, 국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈유령과 바다, 그리고 뫼비우스〉',
+        caption: '김우진, 2022, 2채널 영상 설치, 컬러, 스테레오 사운드,\n8분 59초, 2/3 | A.P. 1,\n국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈빨간내복 20097〉',
+        caption: '김정우, 2009, 한지에 혼합재료,\n91×137cm,\n국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈부동산적 풍경화 #2〉',
+        caption: '김지은, 2004, 캔버스에 유화물감,\n80.3×100cm,\n국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈Destroyer/Protector〉',
+        caption: '남진우, 2022, 광목천 위에 유화물감, 아크릴물감,\n광목천 콜라주 (플라스틱 비닐, 바늘로 부조형태 조형),\n150×100cm, 국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈뇌〉',
+        caption: '김승영, 2020, 쇠사슬, 저울, 핀,\n37x20x24cm, 12kg, mono,\n국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈Hollow Show-Night Life〉',
+        caption: '문소현, 2018-2019, 2채널 비디오,\n4분 16초(x2), 각 loop, 1/3(A.P. 1),\n국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈에너지 드링크가 필요한 사회〉',
+        caption: '박소라, 2023, 스테인레스 스틸, 제스모나이트 캐스팅,\n29×45×9cm, 3kg, 유일본,\n국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈터뷸런스〉',
+        caption: '장서영, 2024 (2025 단채널 영상 재제작),\n단채널영상, 컬러, 사운드, 12분 7초,\ned.1/3 | A.P.1, 국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈CPR Board B〉',
+        caption: '잭슨홍, 2008, 컴퓨터 수치제어로 가공된 ABS 플라스틱,\n76x58x10cm, 10.6kg, 4/20,\n국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈Only.Love.gr.pu〉',
+        caption: '정세인, 2022, 알루미늄 판에 아크릴, 펀칭, 알루미늄,\n나무 프레임, 무반사 유리, 21.9×27.4cm,\n국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈숲속 생활연구소〉 (타이머)',
+        caption: '최병석, 2015, 나무, 철, 깡통, 황동, 볼트, 너트, 와셔,\n플라스틱 병, 철, 종, 스프링, 쥐덫,\n64×21×24cm, 3kg, 국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈숲속 생활연구소〉 (두더지 퇴치 장치)',
+        caption: '최병석, 2015, 철, 알루미늄, 스프링, 볼트, 너트, 와셔,\n고무손잡이, 자전거 나팔,\n123×48×28cm, 5kg, 국립현대미술관 미술은행 소장, 부분'
+      },
+      {
+        title: '〈숲속 생활연구소〉 (헬멧)',
+        caption: '최병석, 2015, 플라스틱 프로펠러, 나무손잡이,\n볼트, 너트, 와셔, 플라스틱 헬멧, 가죽, 동파이프,\n58×23×22cm, 1kg, 국립현대미술관 미술은행 소장, 부분'
+      },
+    ];
 
     // ── Token helpers ──
     function simpleHash(s) {
-      let h1=0xdeadbeef, h2=0x41c6ce57;
-      for (let i=0;i<s.length;i++){const c=s.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677);}
+      let h1=0xdeadbeef,h2=0x41c6ce57;
+      for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677);}
       h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);
       h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);
-      return (4294967296*(2097151&h2)+(h1>>>0)).toString(36);
+      return(4294967296*(2097151&h2)+(h1>>>0)).toString(36);
     }
 
     function parseToken(t) {
@@ -723,7 +767,7 @@
         const dec=atob((t+(pad?'='.repeat(4-pad):'')).replace(/-/g,'+').replace(/_/g,'/'));
         const [cn,ir,ts,sig]=dec.split(':');
         if(simpleHash(`${cn}:${ir}:${ts}`+SECRET)!==sig)return null;
-        return {cardNum:parseInt(cn),isRare:ir==='1',ts:parseInt(ts)};
+        return{cardNum:parseInt(cn),isRare:ir==='1',ts:parseInt(ts)};
       } catch{return null;}
     }
 
@@ -736,41 +780,44 @@
     const DRAG_FULL = 150;
 
     // ── DOM ──
-    const scrLoading   = document.getElementById('scrLoading');
-    const scrError     = document.getElementById('scrError');
-    const scrMain      = document.getElementById('scrMain');
-    const packWrap     = document.getElementById('packWrap');
-    const packTop      = document.getElementById('packTop');
-    const packBottom   = document.getElementById('packBottom');
-    const tearLine     = document.getElementById('tearLine');
-    const dragHint     = document.getElementById('dragHint');
+    const scrLoading    = document.getElementById('scrLoading');
+    const scrError      = document.getElementById('scrError');
+    const scrMain       = document.getElementById('scrMain');
+    const packWrap      = document.getElementById('packWrap');
+    const packTop       = document.getElementById('packTop');
+    const packBottom    = document.getElementById('packBottom');
+    const tearLine      = document.getElementById('tearLine');
+    const dragHint      = document.getElementById('dragHint');
     const cardContainer = document.getElementById('cardContainer');
-    const cardFlipper  = document.getElementById('cardFlipper');
-    const cardFront    = document.getElementById('cardFront');
-    const artworkArea  = document.getElementById('artworkArea');
+    const cardFlipper   = document.getElementById('cardFlipper');
+    const cardFront     = document.getElementById('cardFront');
+    const artworkArea   = document.getElementById('artworkArea');
     const artPlaceholder = document.getElementById('artPlaceholder');
-    const actionBtns   = document.getElementById('actionBtns');
-    const sparklesEl   = document.getElementById('sparkles');
+    const actionBtns    = document.getElementById('actionBtns');
+    const sparklesEl    = document.getElementById('sparkles');
 
     // ── Setup card ──
     function setupCard(cardNum, isRare) {
       cardData = { cardNum, isRare };
 
-      document.getElementById('cnLabel').textContent = `#${String(cardNum).padStart(3,'0')}`;
+      // Artwork number placeholder
       document.getElementById('artNum').textContent = cardNum;
-      document.getElementById('cardTitle').textContent = `작품 ${cardNum}`;
+
+      // Title and caption from data
+      const data = CARD_DATA[cardNum];
+      document.getElementById('cardTitle').textContent = data ? data.title : `작품 ${cardNum}`;
+      document.getElementById('cardCaption').textContent = data ? data.caption : '';
 
       if (isRare) {
         cardFront.classList.add('is-rare');
         document.getElementById('rareBadge').style.display = 'block';
         document.getElementById('rareHolo').style.display = 'block';
-        document.getElementById('cardSeries').textContent = 'RARE — 카드깡 컬렉션 · 2026';
       }
 
       // Load artwork image
       const img = new Image();
       img.className = 'artwork-img';
-      img.alt = `작품 ${cardNum}`;
+      img.alt = data ? data.title : `작품 ${cardNum}`;
       img.onload = () => {
         artworkArea.insertBefore(img, artPlaceholder);
         artPlaceholder.style.display = 'none';
@@ -778,42 +825,29 @@
       img.src = `${IMG_BASE}${cardNum}.png`;
     }
 
-    // ── Tear mechanics ──────────────────────────────
-    // "봉지 뜯기": top portion LIFTS OFF (translateY up), not rotates back
-
+    // ── Tear mechanics ──
     function applyTear(p) {
-      // Pack top lifts upward with slight 3D tilt
-      const liftY  = p * 100;
-      const tiltX  = -p * 12;   // slight backward tilt (3D depth)
-      const tiltZ  = p * 4;     // very slight rotation
+      const liftY = p * 100;
+      const tiltX = -p * 12;
+      const tiltZ = p * 4;
       packTop.style.transform = `translateY(-${liftY}px) rotateX(${tiltX}deg) rotateZ(${tiltZ}deg)`;
-      packTop.style.opacity   = p > 0.72 ? String(1 - (p-0.72)/0.28) : '1';
-
-      // Pack bottom barely moves
+      packTop.style.opacity   = p > 0.72 ? String(1-(p-0.72)/0.28) : '1';
       packBottom.style.transform = `translateY(${p * 8}px)`;
-      packBottom.style.opacity   = p > 0.55 ? String(1 - (p-0.55)/0.45) : '1';
-
-      // Tear line fades as gap opens
-      tearLine.style.opacity = String(Math.max(0, 1 - p * 3.5));
-
-      // Card reveals from behind
-      cardContainer.style.opacity  = String(Math.min(1, p * 1.8));
-      cardContainer.style.transform = `scale(${0.88 + p*0.12}) translateY(${(1-p)*16}px)`;
-
-      // Hint fades quickly
-      dragHint.style.opacity = String(Math.max(0, 1 - p * 5));
+      packBottom.style.opacity   = p > 0.55 ? String(1-(p-0.55)/0.45) : '1';
+      tearLine.style.opacity     = String(Math.max(0, 1-p*3.5));
+      cardContainer.style.opacity  = String(Math.min(1, p*1.8));
+      cardContainer.style.transform = `scale(${0.88+p*0.12}) translateY(${(1-p)*16}px)`;
+      dragHint.style.opacity = String(Math.max(0, 1-p*5));
     }
 
     function completeTear() {
       tearDone = true;
       packWrap.classList.remove('floating');
 
-      // Top piece flies upward + slight curve
       packTop.style.transition = 'transform 0.5s cubic-bezier(0.4,0,1,1), opacity 0.35s ease-out';
       packTop.style.transform  = 'translateY(-320px) translateX(18px) rotateX(-18deg) rotateZ(7deg)';
       packTop.style.opacity    = '0';
 
-      // Bottom drops away
       packBottom.style.transition = 'transform 0.4s ease-in, opacity 0.3s ease-out';
       packBottom.style.transform  = 'translateY(200px) rotateZ(-3deg)';
       packBottom.style.opacity    = '0';
@@ -821,7 +855,6 @@
       tearLine.style.opacity = '0';
       dragHint.style.opacity = '0';
 
-      // Card bounces in
       setTimeout(() => {
         cardContainer.style.transition = 'transform 0.55s cubic-bezier(0.34,1.56,0.64,1), opacity 0.28s';
         cardContainer.style.opacity    = '1';
@@ -844,7 +877,7 @@
       packBottom.style.transform  = 'translateY(0)';
       packBottom.style.opacity    = '1';
       tearLine.style.opacity      = '1';
-      cardContainer.style.opacity = '0';
+      cardContainer.style.opacity   = '0';
       cardContainer.style.transform = 'scale(0.88) translateY(18px)';
       dragHint.style.opacity = '1';
       currentProgress = 0;
@@ -854,59 +887,77 @@
       }, 430);
     }
 
-    // ── Drag events ──
-    function onStart(y) {
-      if (tearDone) return;
-      dragStartY = y;
-      isDragging = true;
-      packWrap.classList.remove('floating');
-    }
-    function onMove(y) {
-      if (!isDragging || tearDone) return;
-      currentProgress = Math.max(0, Math.min(1, (dragStartY - y) / DRAG_FULL));
-      applyTear(currentProgress);
-    }
-    function onEnd() {
-      if (!isDragging || tearDone) return;
-      isDragging = false;
-      if (currentProgress > 0.5) { completeTear(); }
-      else { packWrap.classList.add('floating'); snapBack(); }
-    }
+    // ── Drag ──
+    function onStart(y) { if (tearDone) return; dragStartY=y; isDragging=true; packWrap.classList.remove('floating'); }
+    function onMove(y)  { if (!isDragging||tearDone) return; currentProgress=Math.max(0,Math.min(1,(dragStartY-y)/DRAG_FULL)); applyTear(currentProgress); }
+    function onEnd()    { if (!isDragging||tearDone) return; isDragging=false; if (currentProgress>0.5){completeTear();}else{packWrap.classList.add('floating');snapBack();} }
 
-    document.addEventListener('touchstart', e => onStart(e.touches[0].clientY), { passive: true });
-    document.addEventListener('touchmove',  e => { e.preventDefault(); onMove(e.touches[0].clientY); }, { passive: false });
+    document.addEventListener('touchstart', e=>onStart(e.touches[0].clientY), {passive:true});
+    document.addEventListener('touchmove',  e=>{e.preventDefault();onMove(e.touches[0].clientY);}, {passive:false});
     document.addEventListener('touchend', onEnd);
-    document.addEventListener('mousedown', e => onStart(e.clientY));
-    document.addEventListener('mousemove', e => onMove(e.clientY));
+    document.addEventListener('mousedown', e=>onStart(e.clientY));
+    document.addEventListener('mousemove', e=>onMove(e.clientY));
     document.addEventListener('mouseup', onEnd);
 
-    // ── Sparkles (rare) ──
+    // ── Sparkles ──
     function spawnSparkles() {
       const colors = ['#ccff00','#a8ff00','#e8ff80','#ffffff','#f0ffb0'];
-      for (let i = 0; i < 28; i++) {
+      for (let i=0; i<28; i++) {
         const el = document.createElement('div');
         el.className = 'sparkle';
         const sz = Math.random()*5+3;
-        el.style.cssText = `
-          width:${sz}px;height:${sz}px;
-          top:${Math.random()*100}%;left:${Math.random()*100}%;
-          --color:${colors[~~(Math.random()*colors.length)]};
-          --dur:${1.2+Math.random()*1.4}s;
-          --delay:${Math.random()*1.8}s;
-          --tx:${(Math.random()-.5)*44}px;
-          --ty:${(Math.random()-.5)*44}px;
-        `;
+        el.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--color:${colors[~~(Math.random()*colors.length)]};--dur:${1.2+Math.random()*1.4}s;--delay:${Math.random()*1.8}s;--tx:${(Math.random()-.5)*44}px;--ty:${(Math.random()-.5)*44}px;`;
         sparklesEl.appendChild(el);
       }
     }
 
-    // ── Save (canvas) ──
+    // ── Canvas drawing (for save) ──
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const lines = [];
+      for (const para of text.split('\n')) {
+        const words = para.split(' ');
+        let line = '';
+        for (const word of words) {
+          const test = line ? line+' '+word : word;
+          if (ctx.measureText(test).width > maxWidth && line) {
+            lines.push(line); line = word;
+          } else { line = test; }
+        }
+        if (line) lines.push(line);
+      }
+      lines.forEach((l,i) => ctx.fillText(l, x, y+i*lineHeight));
+      return lines.length * lineHeight;
+    }
+
     function drawCanvas() {
       const { cardNum, isRare } = cardData;
+      const data = CARD_DATA[cardNum];
+      const CW=560, CX=20, CY=20, R=28;
+
+      // Measure caption to set canvas height
+      const tmpCvs = document.createElement('canvas');
+      tmpCvs.width=600;
+      const tmpCtx = tmpCvs.getContext('2d');
+      tmpCtx.font = '18px Arial';
+      let captionLines=0;
+      if (data) {
+        for (const para of data.caption.split('\n')) {
+          const words=para.split(' '); let line='';
+          for (const w of words) {
+            const t=line?line+' '+w:w;
+            if (tmpCtx.measureText(t).width>CW-20&&line){captionLines++;line=w;}else{line=t;}
+          }
+          if(line) captionLines++;
+        }
+      }
+
+      // Heights
+      const AH = 500;  // artwork area
+      const infoH = Math.max(140, 50 + 36 + (isRare?28:0) + captionLines*28 + 30);
+      const CH = AH + infoH;
       const cvs = document.createElement('canvas');
-      cvs.width = 600; cvs.height = 840;
+      cvs.width=600; cvs.height=CH+40;
       const ctx = cvs.getContext('2d');
-      const CX=20, CY=20, CW=560, CH=800, R=28;
 
       function rr(x,y,w,h,r){
         ctx.beginPath();
@@ -917,13 +968,12 @@
       }
 
       // Background
-      ctx.fillStyle = '#ededeb'; ctx.fillRect(0,0,600,840);
+      ctx.fillStyle='#ededeb'; ctx.fillRect(0,0,cvs.width,cvs.height);
 
       // Card shadow
-      ctx.shadowColor = 'rgba(0,0,0,0.12)';
-      ctx.shadowBlur = 32; ctx.shadowOffsetY = 8;
-      ctx.fillStyle = '#fff'; rr(CX,CY,CW,CH,R); ctx.fill();
-      ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+      ctx.shadowColor='rgba(0,0,0,0.12)'; ctx.shadowBlur=32; ctx.shadowOffsetY=8;
+      ctx.fillStyle='#fff'; rr(CX,CY,CW,CH,R); ctx.fill();
+      ctx.shadowBlur=0; ctx.shadowOffsetY=0;
 
       // Rare glow
       if (isRare) {
@@ -934,145 +984,123 @@
       }
 
       // Card border
-      ctx.strokeStyle = isRare ? 'rgba(204,255,0,0.6)' : 'rgba(0,0,0,0.08)';
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle=isRare?'rgba(204,255,0,0.6)':'rgba(0,0,0,0.08)'; ctx.lineWidth=1.5;
       rr(CX,CY,CW,CH,R); ctx.stroke();
 
       // Top accent stripe
-      ctx.fillStyle = isRare ? '#ccff00' : 'rgba(0,0,0,0.06)';
-      ctx.fillRect(CX, CY, CW, 5);
+      ctx.fillStyle=isRare?'#ccff00':'rgba(0,0,0,0.06)';
+      ctx.fillRect(CX,CY,CW,5);
 
-      // Artwork area
-      const AX=CX, AY=CY, AW=CW, AH=640;
+      // Artwork area with contain fit
+      const AAX=CX, AAY=CY, AAW=CW, AAH=AH;
       ctx.save();
-      rr(AX,AY,AW,AH,R); ctx.clip();
+      rr(AAX,AAY,AAW,AAH,R); ctx.clip();
+      ctx.fillStyle='rgba(244,244,242,0.9)'; ctx.fillRect(AAX,AAY,AAW,AAH);
 
-      // Draw artwork image if loaded
       const imgEl = artworkArea.querySelector('.artwork-img');
       if (imgEl && imgEl.complete && imgEl.naturalWidth > 0) {
-        // Fit image to area
+        const pad=16;
         const iw=imgEl.naturalWidth, ih=imgEl.naturalHeight;
-        const scale=Math.max(AW/iw, AH/ih);
+        const scale=Math.min((AAW-pad*2)/iw, (AAH-pad*2)/ih);
         const dw=iw*scale, dh=ih*scale;
-        const dx=AX+(AW-dw)/2, dy=AY+(AH-dh)/2;
+        const dx=AAX+(AAW-dw)/2, dy=AAY+(AAH-dh)/2;
         ctx.drawImage(imgEl, dx, dy, dw, dh);
       } else {
-        ctx.fillStyle='rgba(240,240,238,0.9)';
-        ctx.fillRect(AX,AY,AW,AH);
         ctx.fillStyle='rgba(0,0,0,0.06)';
         ctx.font='bold 160px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.fillText(cardNum, AX+AW/2, AY+AH/2);
-        ctx.fillStyle='rgba(0,0,0,0.18)';
-        ctx.font='28px Arial';
-        ctx.fillText('작품 준비 중', AX+AW/2, AY+AH/2+100);
+        ctx.fillText(cardNum, AAX+AAW/2, AAY+AAH/2);
       }
       ctx.restore();
 
-      // Frosted info strip
-      ctx.fillStyle='rgba(255,255,255,0.9)';
-      ctx.fillRect(CX, CY+AH, CW, CH-AH);
-      ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=1;
-      ctx.beginPath(); ctx.moveTo(CX,CY+AH); ctx.lineTo(CX+CW,CY+AH); ctx.stroke();
+      // Info strip
+      ctx.fillStyle='rgba(255,255,255,0.92)';
+      rr(CX, CY+AH, CW, infoH, 0); // no bottom radius separately; handled by clip
+      ctx.save(); rr(CX,CY,CW,CH,R); ctx.clip();
+      ctx.fillStyle='rgba(255,255,255,0.92)'; ctx.fillRect(CX,CY+AH,CW,infoH); ctx.restore();
 
       // Info text
-      ctx.fillStyle='rgba(0,0,0,0.35)'; ctx.font='600 20px Arial';
-      ctx.textAlign='left'; ctx.textBaseline='alphabetic';
-      ctx.fillText(`#${String(cardNum).padStart(3,'0')}`, CX+22, CY+AH+34);
-
+      let textY = CY+AH+20;
       if (isRare) {
         ctx.fillStyle='#ccff00';
-        ctx.fillRect(CX+CW-98, CY+AH+18, 76, 24);
-        ctx.fillStyle='#0a0a0a'; ctx.font='bold 15px Arial';
+        ctx.fillRect(CX+18, textY, 72, 22);
+        ctx.fillStyle='#0a0a0a'; ctx.font='bold 14px Arial';
         ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.fillText('RARE', CX+CW-60, CY+AH+30);
+        ctx.fillText('RARE', CX+18+36, textY+11);
+        textY += 30;
       }
 
-      ctx.fillStyle='#0a0a0a'; ctx.font='bold 28px Arial';
-      ctx.textAlign='left'; ctx.textBaseline='alphabetic';
-      ctx.fillText(`작품 ${cardNum}`, CX+22, CY+AH+68);
+      if (data) {
+        ctx.fillStyle='#0a0a0a'; ctx.font='bold 26px Arial';
+        ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+        ctx.fillText(data.title, CX+18, textY+22);
+        textY += 36;
 
-      ctx.fillStyle='rgba(0,0,0,0.38)'; ctx.font='20px Arial';
-      ctx.fillText(isRare?'RARE — 카드깡 컬렉션 · 2026':'카드깡 컬렉션 · 2026', CX+22, CY+AH+96);
-
-      // Corners
-      ctx.strokeStyle=isRare?'rgba(204,255,0,0.6)':'rgba(0,0,0,0.1)'; ctx.lineWidth=1.5;
-      [[CX+12,CY+12,1,1],[CX+CW-12,CY+12,-1,1],[CX+12,CY+CH-12,1,-1],[CX+CW-12,CY+CH-12,-1,-1]].forEach(([x,y,dx,dy])=>{
-        ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+20*dx,y); ctx.moveTo(x,y); ctx.lineTo(x,y+20*dy); ctx.stroke();
-      });
+        ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.font='18px Arial';
+        wrapText(ctx, data.caption, CX+18, textY+14, CW-36, 28);
+      }
 
       return cvs;
     }
 
     async function saveCard() {
-      const btn = document.getElementById('btnSave');
-      btn.disabled = true; btn.textContent = '저장 중...';
+      const btn=document.getElementById('btnSave');
+      btn.disabled=true; btn.textContent='저장 중...';
       try {
-        const cvs = drawCanvas();
-        const fname = `card_${cardData.cardNum}${cardData.isRare?'_rare':''}.png`;
+        const cvs=drawCanvas();
+        const fname=`card_${cardData.cardNum}${cardData.isRare?'_rare':''}.png`;
         if (navigator.share && navigator.canShare) {
-          cvs.toBlob(async blob => {
-            const f = new File([blob], fname, {type:'image/png'});
+          cvs.toBlob(async blob=>{
+            const f=new File([blob],fname,{type:'image/png'});
             if (navigator.canShare({files:[f]})) {
-              try { await navigator.share({files:[f], title:`카드깡 - 작품 ${cardData.cardNum}`}); showToast('저장 완료'); }
-              catch(e){ if(e.name!=='AbortError') fallbackDl(cvs,fname); }
-            } else { fallbackDl(cvs,fname); }
+              try{await navigator.share({files:[f],title:'카드깡 컬렉션'});showToast('저장 완료');}
+              catch(e){if(e.name!=='AbortError')fallbackDl(cvs,fname);}
+            } else {fallbackDl(cvs,fname);}
             btn.disabled=false; btn.textContent='갤러리에 저장';
           });
         } else {
           fallbackDl(cvs,fname);
           btn.disabled=false; btn.textContent='갤러리에 저장';
         }
-      } catch { btn.disabled=false; btn.textContent='갤러리에 저장'; showToast('저장 실패. 다시 시도해주세요.'); }
+      } catch {btn.disabled=false; btn.textContent='갤러리에 저장'; showToast('저장 실패. 다시 시도해주세요.');}
     }
 
-    function fallbackDl(cvs,fname) {
-      const a=document.createElement('a'); a.download=fname;
-      a.href=cvs.toDataURL('image/png'); a.click();
-      showToast('이미지 저장됨');
-    }
-
-    function showToast(msg) {
-      const t=document.getElementById('toast');
-      t.textContent=msg; t.classList.add('show');
-      setTimeout(()=>t.classList.remove('show'), 2500);
-    }
+    function fallbackDl(cvs,fname){const a=document.createElement('a');a.download=fname;a.href=cvs.toDataURL('image/png');a.click();showToast('이미지 저장됨');}
+    function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
     // ── Init ──
     function init() {
-      const p = new URLSearchParams(window.location.search);
-      const tokenStr = p.get('t');
-      const isPreview = p.get('preview') === '1';
+      const p=new URLSearchParams(window.location.search);
+      const tokenStr=p.get('t');
+      const isPreview=p.get('preview')==='1';
       let cardNum, isRare;
 
       if (tokenStr) {
-        const data = parseToken(tokenStr);
-        if (data && (isPreview || Date.now() - data.ts <= EXPIRE_MS)) {
-          cardNum = data.cardNum; isRare = data.isRare;
+        const data=parseToken(tokenStr);
+        if (data&&(isPreview||Date.now()-data.ts<=EXPIRE_MS)) {
+          cardNum=data.cardNum; isRare=data.isRare;
         }
       }
 
-      // Random fallback (refresh behavior)
       if (!cardNum) {
-        cardNum = Math.floor(Math.random() * CARD_COUNT) + 1;
-        isRare  = Math.random() < 1/50;
+        cardNum=Math.floor(Math.random()*CARD_COUNT)+1;
+        isRare=Math.random()<1/50;
       }
 
       scrLoading.classList.add('gone');
       scrMain.classList.remove('gone');
       setupCard(cardNum, isRare);
 
-      // Preview: skip pack, auto-flip
       if (isPreview) {
-        packWrap.style.display = 'none';
-        dragHint.style.display = 'none';
-        cardContainer.style.opacity   = '1';
-        cardContainer.style.transform = 'scale(1) translateY(0)';
-        tearDone = true;
-        setTimeout(() => {
+        packWrap.style.display='none';
+        dragHint.style.display='none';
+        cardContainer.style.opacity='1';
+        cardContainer.style.transform='scale(1) translateY(0)';
+        tearDone=true;
+        setTimeout(()=>{
           cardFlipper.classList.add('flipped');
-          if (isRare) setTimeout(spawnSparkles, 640);
-          setTimeout(() => actionBtns.classList.remove('gone'), 880);
-        }, 300);
+          if (isRare) setTimeout(spawnSparkles,640);
+          setTimeout(()=>actionBtns.classList.remove('gone'),880);
+        },300);
       }
     }
 
