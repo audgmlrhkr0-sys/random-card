@@ -198,6 +198,107 @@
       letter-spacing: 0.04em;
     }
     .btn-test.rare:hover { background: rgba(204,255,0,0.2); }
+
+    /* All-cards check overlay */
+    .check-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(237,237,235,0.95);
+      -webkit-backdrop-filter: blur(24px);
+      backdrop-filter: blur(24px);
+      z-index: 100;
+      overflow-y: auto;
+      padding: 20px 16px 40px;
+    }
+    .check-overlay.open { display: block; }
+
+    .check-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      position: sticky;
+      top: 0;
+      background: rgba(237,237,235,0.92);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      padding: 8px 0;
+      z-index: 10;
+    }
+
+    .check-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .btn-close-check {
+      padding: 7px 16px;
+      background: var(--text);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font: 600 0.78rem/1 var(--font);
+      cursor: pointer;
+    }
+
+    .check-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .check-card {
+      background: rgba(255,255,255,0.65);
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.88);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    .check-num {
+      background: var(--text);
+      color: #fff;
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      letter-spacing: 0.08em;
+    }
+
+    .check-img-wrap {
+      background: rgba(244,244,242,0.9);
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+    }
+
+    .check-img-wrap img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .check-info {
+      padding: 8px 8px 10px;
+    }
+
+    .check-info-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 3px;
+    }
+
+    .check-info-cap {
+      font-size: 0.55rem;
+      color: rgba(0,0,0,0.45);
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -224,10 +325,43 @@
 
   </div>
 
+  <!-- All-cards check overlay -->
+  <div class="check-overlay" id="checkOverlay">
+    <div class="check-header">
+      <span class="check-title">전체 카드 순서 확인</span>
+      <button class="btn-close-check" onclick="document.getElementById('checkOverlay').classList.remove('open')">닫기</button>
+    </div>
+    <div class="check-grid" id="checkGrid"></div>
+  </div>
+
   <script>
     const BASE    = 'https://audgmlrhkr0-sys.github.io/random-card';
     const SECRET  = 'cgk26_9qM_rnd';
     const CARD_COUNT = 19;
+    const IMG_BASE = './images/';
+
+    const CARD_DATA = [
+      null,
+      { title:'〈Face of Face-#1〉', cap:'천경우, 2016' },
+      { title:'〈Face of Face-#3〉', cap:'천경우, 2016' },
+      { title:'〈Face of Face-#5〉', cap:'천경우, 2016' },
+      { title:'〈공동고백〉', cap:'고등어, 2021' },
+      { title:'〈Gestures in the Subway 3-39〉', cap:'권순관, 2009' },
+      { title:'〈Ruler No. 0〉', cap:'김승주, 2012' },
+      { title:'〈유령과 바다, 그리고 뫼비우스〉', cap:'김우진, 2022' },
+      { title:'〈빨간내복 20097〉', cap:'김정우, 2009' },
+      { title:'〈부동산적 풍경화 #2〉', cap:'김지은, 2004' },
+      { title:'〈Destroyer/Protector〉', cap:'남진우, 2022' },
+      { title:'〈뇌〉', cap:'김승영, 2020' },
+      { title:'〈Hollow Show-Night Life〉', cap:'문소현, 2018-2019' },
+      { title:'〈에너지 드링크가 필요한 사회〉', cap:'박소라, 2023' },
+      { title:'〈터뷸런스〉', cap:'장서영, 2024' },
+      { title:'〈CPR Board B〉', cap:'잭슨홍, 2008' },
+      { title:'〈Only.Love.gr.pu〉', cap:'정세인, 2022' },
+      { title:'〈숲속 생활연구소〉 (타이머)', cap:'최병석, 2015' },
+      { title:'〈숲속 생활연구소〉 (두더지 퇴치 장치)', cap:'최병석, 2015' },
+      { title:'〈숲속 생활연구소〉 (헬멧)', cap:'최병석, 2015' },
+    ];
 
     function simpleHash(s) {
       let h1=0xdeadbeef,h2=0x41c6ce57;
@@ -274,6 +408,36 @@
       rare.textContent = 'RARE 카드 확인';
       rare.onclick = () => window.open(`${BASE}/card.html?t=${makeToken(1,true)}&preview=1`, '_blank');
       grid.appendChild(rare);
+
+      // Check-all button
+      const checkBtn = document.createElement('button');
+      checkBtn.className = 'btn-test';
+      checkBtn.style.cssText = 'grid-column:span 3;margin-top:4px;border-color:rgba(0,0,0,0.15);';
+      checkBtn.textContent = '전체 순서 확인';
+      checkBtn.onclick = buildCheckGrid;
+      grid.appendChild(checkBtn);
+    }
+
+    function buildCheckGrid() {
+      const overlay = document.getElementById('checkOverlay');
+      const grid    = document.getElementById('checkGrid');
+      grid.innerHTML = '';
+      for (let i = 1; i <= CARD_COUNT; i++) {
+        const data = CARD_DATA[i];
+        const card = document.createElement('div');
+        card.className = 'check-card';
+        card.innerHTML = `
+          <div class="check-num">${i}</div>
+          <div class="check-img-wrap">
+            <img src="${IMG_BASE}${i}.png" alt="${i}" onerror="this.style.opacity='0.2'">
+          </div>
+          <div class="check-info">
+            <div class="check-info-title">${data ? data.title : '?'}</div>
+            <div class="check-info-cap">${data ? data.cap : ''}</div>
+          </div>`;
+        grid.appendChild(card);
+      }
+      overlay.classList.add('open');
     }
 
     buildQR();
