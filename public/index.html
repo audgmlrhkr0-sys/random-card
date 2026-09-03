@@ -406,11 +406,17 @@
         btn.onclick = () => window.open(`${BASE}/card.html?t=${makeToken(i,false)}&preview=1`, '_blank');
         grid.appendChild(btn);
       }
-      const rare = document.createElement('button');
-      rare.className = 'btn-test rare';
-      rare.textContent = 'RARE 카드 확인';
-      rare.onclick = () => window.open(`${BASE}/card.html?t=${makeToken(20,true)}&preview=1`, '_blank');
-      grid.appendChild(rare);
+      const rare1 = document.createElement('button');
+      rare1.className = 'btn-test rare';
+      rare1.textContent = 'RARE 카드 확인 (20)';
+      rare1.onclick = () => window.open(`${BASE}/card.html?t=${makeToken(20,true)}&preview=1`, '_blank');
+      grid.appendChild(rare1);
+
+      const rare2 = document.createElement('button');
+      rare2.className = 'btn-test rare';
+      rare2.textContent = 'RARE 카드 확인 (21)';
+      rare2.onclick = () => window.open(`${BASE}/card.html?t=${makeToken(21,true)}&preview=1`, '_blank');
+      grid.appendChild(rare2);
 
       // Check-all button
       const checkBtn = document.createElement('button');
