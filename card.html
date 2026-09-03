@@ -664,7 +664,7 @@
       <div class="pack-wrap floating" id="packWrap">
         <div class="pack-top" id="packTop">
           <div class="pack-top-name">Card Gacha</div>
-          <div class="pack-top-sub">카드깡 컬렉션</div>
+          <div class="pack-top-sub">표준 사용법</div>
         </div>
         <div class="pack-bottom" id="packBottom">
           <div class="pack-bottom-brand">경북대미술관</div>
@@ -1085,7 +1085,7 @@
           cvs.toBlob(async blob=>{
             const f=new File([blob],fname,{type:'image/png'});
             if (navigator.canShare({files:[f]})) {
-              try{await navigator.share({files:[f],title:'카드깡 컬렉션'});showToast('저장 완료');}
+              try{await navigator.share({files:[f],title:'표준 사용법'});showToast('저장 완료');}
               catch(e){if(e.name!=='AbortError')fallbackDl(cvs,fname);}
             } else {fallbackDl(cvs,fname);}
             btn.disabled=false; btn.textContent='갤러리에 저장';
