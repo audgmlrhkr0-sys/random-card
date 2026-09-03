@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>카드 뽑기 🎴</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: #0d0d1a;
+      color: #fff;
+      font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .bg-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .bg-glow::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* ── 로딩 / 에러 ── */
+    .screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 10;
+    }
+
+    .screen.hidden { display: none; }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #c084fc;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .screen p { color: #94a3b8; font-size: 0.95rem; }
+    .error-icon { font-size: 3rem; }
+
+    .error-msg {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #f87171;
+      text-align: center;
+      max-width: 260px;
+      line-height: 1.6;
+      white-space: pre-line;
+    }
+
+    .btn-back {
+      margin-top: 8px;
+      padding: 12px 28px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      color: #cbd5e1;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* ── 메인 ── */
+    .main {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+      padding: 40px 20px 60px;
+      width: 100%;
+    }
+
+    .main.hidden { display: none; }
+
+    /* ── 카드 3D 플립 ── */
+    .card-scene {
+      perspective: 1000px;
+      width: 300px;
+      height: 420px;
+    }
+
+    .card-flipper {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card-flipper.flipped { transform: rotateY(180deg); }
+
+    .card-back, .card-front {
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      backface-visibility: hidden;
+    }
+
+    /* 뒷면 */
+    .card-back {
+      background: linear-gradient(135deg, #1e1b4b, #312e81, #1e1b4b);
+      border: 2px solid rgba(129,140,248,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .card-back-inner {
+      width: 260px;
+      height: 380px;
+      border: 1px solid rgba(129,140,248,0.2);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(129,140,248,0.04) 0px, rgba(129,140,248,0.04) 1px,
+        transparent 1px, transparent 12px
+      );
+    }
+
+    .card-back-logo {
+      font-size: 3.5rem;
+      animation: cardPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes cardPulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(192,132,252,0.6)); }
+      50% { transform: scale(1.05); filter: drop-shadow(0 0 32px rgba(192,132,252,0.9)); }
+    }
+
+    .card-back-text {
+      color: rgba(129,140,248,0.8);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+    }
+
+    .tap-hint {
+      position: absolute;
+      bottom: 16px;
+      font-size: 0.78rem;
+      color: rgba(148,163,184,0.7);
+      animation: blink 1.5s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+
+    /* 앞면 */
+    .card-front {
+      transform: rotateY(180deg);
+      overflow: hidden;
+      background: #0f172a;
+    }
+
+    /* 일반 테두리 */
+    .card-border {
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      padding: 3px;
+      background: linear-gradient(135deg, #a78bfa, #6366f1, #38bdf8, #a78bfa);
+      background-size: 300% 300%;
+      animation: borderRotate 4s linear infinite;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: destination-out;
+      mask-composite: exclude;
+    }
+
+    @keyframes borderRotate {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 300% 300%; }
+    }
+
+    /* 레어 테두리 */
+    .rare-border {
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      padding: 3px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b, #ef4444, #ec4899, #8b5cf6, #3b82f6, #06b6d4, #10b981, #fbbf24);
+      background-size: 400% 400%;
+      animation: rainbowBorder 2s linear infinite;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: destination-out;
+      mask-composite: exclude;
+      display: none;
+    }
+
+    @keyframes rainbowBorder {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+
+    /* 레어 홀로그램 */
+    .rare-holo {
+      position: absolute;
+      inset: 3px;
+      border-radius: 15px;
+      background: linear-gradient(
+        125deg,
+        transparent 20%, rgba(255,255,255,0.04) 35%,
+        rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 65%,
+        transparent 80%
+      );
+      background-size: 200% 200%;
+      animation: holoShift 3s ease-in-out infinite alternate;
+      pointer-events: none;
+      z-index: 5;
+      display: none;
+    }
+
+    @keyframes holoShift {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 100% 100%; }
+    }
+
+    /* 스파클 */
+    .sparkles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: visible;
+      z-index: 10;
+    }
+
+    .sparkle {
+      position: absolute;
+      border-radius: 50%;
+      animation: sparkleAnim var(--dur, 1.5s) ease-in-out var(--delay, 0s) infinite;
+      background: var(--color, #fff);
+      box-shadow: 0 0 6px var(--color, #fff);
+    }
+
+    @keyframes sparkleAnim {
+      0% { transform: scale(0) rotate(0deg); opacity: 0; }
+      20% { opacity: 1; }
+      50% { transform: scale(1) rotate(180deg); opacity: 0.8; }
+      80% { opacity: 0.2; }
+      100% { transform: scale(0) rotate(360deg) translate(var(--tx,0), var(--ty,0)); opacity: 0; }
+    }
+
+    /* 코너 장식 */
+    .corner {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      z-index: 3;
+    }
+
+    .corner-tl { top: 10px; left: 10px; border-top: 2px solid; border-left: 2px solid; border-radius: 3px 0 0 0; }
+    .corner-tr { top: 10px; right: 10px; border-top: 2px solid; border-right: 2px solid; border-radius: 0 3px 0 0; }
+    .corner-bl { bottom: 10px; left: 10px; border-bottom: 2px solid; border-left: 2px solid; border-radius: 0 0 0 3px; }
+    .corner-br { bottom: 10px; right: 10px; border-bottom: 2px solid; border-right: 2px solid; border-radius: 0 0 3px 0; }
+
+    .normal-corners .corner { border-color: rgba(139,92,246,0.6); }
+    .rare-corners .corner { border-color: rgba(251,191,36,0.8); }
+
+    /* 카드 내용 */
+    .card-content {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 14px;
+      gap: 10px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-num {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.45);
+    }
+
+    .rare-badge {
+      display: none;
+      padding: 3px 8px;
+      background: linear-gradient(90deg, #fbbf24, #f59e0b);
+      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #1a0a00;
+      letter-spacing: 0.08em;
+      animation: badgeGlow 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes badgeGlow {
+      from { box-shadow: 0 0 8px rgba(251,191,36,0.5); }
+      to { box-shadow: 0 0 18px rgba(251,191,36,0.9); }
+    }
+
+    /* 아트워크 */
+    .artwork-area {
+      flex: 1;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .artwork-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .artwork-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .artwork-num {
+      font-size: 3rem;
+      font-weight: 800;
+      opacity: 0.15;
+    }
+
+    .artwork-label {
+      font-size: 0.82rem;
+      opacity: 0.45;
+      letter-spacing: 0.05em;
+    }
+
+    .card-footer { padding: 4px 0 2px; }
+
+    .card-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.9);
+      text-align: center;
+    }
+
+    .card-series {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.35);
+      text-align: center;
+      margin-top: 2px;
+    }
+
+    /* 흔들기 */
+    @keyframes shake {
+      0%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(-3deg); }
+      40% { transform: rotate(3deg); }
+      60% { transform: rotate(-2deg); }
+      80% { transform: rotate(2deg); }
+    }
+
+    .card-flipper.shaking { animation: shake 0.4s ease-in-out; }
+
+    /* 버튼 */
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 300px;
+    }
+
+    .action-buttons.hidden { display: none; }
+
+    .btn-save {
+      padding: 15px;
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .btn-save:hover { transform: translateY(-2px); }
+    .btn-save:active { transform: translateY(0); }
+    .btn-save:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .btn-retry {
+      padding: 13px;
+      background: transparent;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      color: #94a3b8;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-retry:hover { border-color: #64748b; color: #e2e8f0; }
+
+    /* 토스트 */
+    .toast {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-size: 0.9rem;
+      color: #4ade80;
+      font-weight: 600;
+      opacity: 0;
+      transition: all 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 999;
+    }
+
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <!-- 로딩 -->
+  <div class="screen" id="screenLoading">
+    <div class="spinner"></div>
+    <p>카드를 불러오는 중...</p>
+  </div>
+
+  <!-- 에러 -->
+  <div class="screen hidden" id="screenError">
+    <div class="error-icon" id="errorIcon">❌</div>
+    <div class="error-msg" id="errorMsg"></div>
+    <button class="btn-back" onclick="window.close()">← 닫기</button>
+  </div>
+
+  <!-- 메인 -->
+  <div class="main hidden" id="screenMain">
+    <div class="card-scene">
+      <div class="card-flipper" id="cardFlipper">
+
+        <!-- 뒷면 -->
+        <div class="card-back" id="cardBack" onclick="openCard()">
+          <div class="card-back-inner">
+            <div class="card-back-logo">🎴</div>
+            <div class="card-back-text">CARD GACHA</div>
+          </div>
+          <div class="tap-hint">탭해서 카드 열기</div>
+        </div>
+
+        <!-- 앞면 -->
+        <div class="card-front" id="cardFront">
+          <div class="card-border" id="normalBorder"></div>
+          <div class="rare-border" id="rareBorder"></div>
+          <div class="rare-holo" id="rareHolo"></div>
+          <div class="sparkles" id="sparkles"></div>
+
+          <div class="corner corner-tl"></div>
+          <div class="corner corner-tr"></div>
+          <div class="corner corner-bl"></div>
+          <div class="corner corner-br"></div>
+
+          <div class="card-content">
+            <div class="card-header">
+              <span class="card-num" id="cardNumLabel">#001</span>
+              <span class="rare-badge" id="rareBadge">✨ RARE</span>
+            </div>
+            <div class="artwork-area" id="artworkArea">
+              <div class="artwork-placeholder" id="artPlaceholder">
+                <div class="artwork-num" id="artNum">1</div>
+                <div class="artwork-label">작품 준비 중</div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <div class="card-title" id="cardTitle">작품 1</div>
+              <div class="card-series" id="cardSeries">카드깡 컬렉션 · 2026</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="action-buttons hidden" id="actionButtons">
+      <button class="btn-save" id="btnSave" onclick="saveCard()">📥 갤러리에 저장</button>
+      <button class="btn-retry" onclick="goRetry()">↩ 다시하기 (재스캔)</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SECRET = 'cgk26_9qM_rnd';
+    const EXPIRE_MS = 30000;
+
+    const cardGradients = [
+      ['#0f2027','#203a43','#2c5364'],
+      ['#1a0533','#3a0551','#6b0080'],
+      ['#0d1b2a','#1b4332','#2d6a4f'],
+      ['#1a0a00','#4a1200','#7b2400'],
+      ['#0a0e1a','#1a2040','#2a3a6a'],
+      ['#0f0f23','#1a1a3e','#2d2d5e'],
+      ['#0d2137','#0d4f6e','#1a7a9e'],
+      ['#1a0a14','#3d0a2a','#6b1044'],
+      ['#0a1a0a','#1a3d1a','#2a5e2a'],
+      ['#1a1200','#3d2e00','#6b5000'],
+      ['#0a0a1a','#1a0a3d','#300a6b'],
+      ['#1a0a0a','#3d1a1a','#6b2a2a'],
+      ['#0a1a14','#1a3d2e','#2a6b50'],
+      ['#0f1a2e','#1e2d4e','#2e4066'],
+      ['#1a1014','#3d202a','#6b3040'],
+    ];
+
+    function simpleHash(str) {
+      let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+      for (let i = 0; i < str.length; i++) {
+        const c = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ c, 2654435761);
+        h2 = Math.imul(h2 ^ c, 1597334677);
+      }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+    }
+
+    function parseToken(token) {
+      try {
+        const pad = token.length % 4;
+        const padded = token + (pad ? '='.repeat(4 - pad) : '');
+        const decoded = atob(padded.replace(/-/g, '+').replace(/_/g, '/'));
+        const parts = decoded.split(':');
+        if (parts.length !== 4) return null;
+        const [cn, ir, ts, sig] = parts;
+        const payload = `${cn}:${ir}:${ts}`;
+        if (simpleHash(payload + SECRET) !== sig) return null;
+        return { cardNum: parseInt(cn), isRare: ir === '1', ts: parseInt(ts) };
+      } catch { return null; }
+    }
+
+    let cardData = null;
+    let cardOpened = false;
+
+    function showError(icon, msg) {
+      document.getElementById('screenLoading').classList.add('hidden');
+      document.getElementById('screenError').classList.remove('hidden');
+      document.getElementById('errorIcon').textContent = icon;
+      document.getElementById('errorMsg').textContent = msg;
+    }
+
+    function setupCard(cardNum, isRare) {
+      cardData = { cardNum, isRare };
+      const idx = (cardNum - 1) % cardGradients.length;
+      const [c1, c2, c3] = cardGradients[idx];
+      const front = document.getElementById('cardFront');
+
+      if (isRare) {
+        front.style.background = `linear-gradient(135deg, #0a0510, #150a20, #0a1520)`;
+        document.getElementById('normalBorder').style.display = 'none';
+        document.getElementById('rareBorder').style.display = 'block';
+        document.getElementById('rareHolo').style.display = 'block';
+        document.getElementById('rareBadge').style.display = 'block';
+        document.getElementById('artNum').style.color = '#fbbf24';
+        document.getElementById('cardSeries').style.color = '#fbbf24';
+        document.getElementById('cardSeries').textContent = '✨ RARE 카드깡 컬렉션 · 2026';
+        // 코너 색상
+        front.querySelectorAll('.corner').forEach(c => c.style.borderColor = 'rgba(251,191,36,0.8)');
+      } else {
+        front.style.background = `linear-gradient(135deg, ${c1}, ${c2}, ${c3})`;
+        front.querySelectorAll('.corner').forEach(c => c.style.borderColor = 'rgba(139,92,246,0.6)');
+      }
+
+      document.getElementById('artworkArea').style.background = `linear-gradient(135deg, ${c1}cc, ${c3}cc)`;
+      document.getElementById('cardNumLabel').textContent = `#${String(cardNum).padStart(3, '0')}`;
+      document.getElementById('artNum').textContent = cardNum;
+      document.getElementById('cardTitle').textContent = `작품 ${cardNum}`;
+    }
+
+    function openCard() {
+      if (cardOpened) return;
+      cardOpened = true;
+
+      const flipper = document.getElementById('cardFlipper');
+      flipper.classList.add('shaking');
+
+      setTimeout(() => {
+        flipper.classList.remove('shaking');
+        flipper.classList.add('flipped');
+
+        setTimeout(() => {
+          document.getElementById('cardBack').style.pointerEvents = 'none';
+          if (cardData.isRare) spawnSparkles();
+          document.getElementById('actionButtons').classList.remove('hidden');
+        }, 800);
+      }, 400);
+    }
+
+    function spawnSparkles() {
+      const container = document.getElementById('sparkles');
+      const colors = ['#fbbf24','#f59e0b','#ffffff','#fde68a','#fcd34d','#ef4444','#ec4899'];
+      for (let i = 0; i < 28; i++) {
+        const el = document.createElement('div');
+        el.className = 'sparkle';
+        const size = Math.random() * 6 + 3;
+        el.style.cssText = `
+          width:${size}px; height:${size}px;
+          top:${Math.random()*100}%; left:${Math.random()*100}%;
+          --color:${colors[Math.floor(Math.random()*colors.length)]};
+          --dur:${1.2+Math.random()*1.5}s;
+          --delay:${Math.random()*2}s;
+          --tx:${(Math.random()-0.5)*40}px;
+          --ty:${(Math.random()-0.5)*40}px;
+        `;
+        container.appendChild(el);
+      }
+    }
+
+    async function saveCard() {
+      const btn = document.getElementById('btnSave');
+      btn.disabled = true;
+      btn.textContent = '저장 중...';
+
+      try {
+        const canvas = drawCardCanvas();
+        if (navigator.share && navigator.canShare) {
+          canvas.toBlob(async (blob) => {
+            const file = new File([blob], `card_${cardData.cardNum}${cardData.isRare ? '_rare' : ''}.png`, { type: 'image/png' });
+            if (navigator.canShare({ files: [file] })) {
+              try {
+                await navigator.share({ files: [file], title: `카드깡 - 작품 ${cardData.cardNum}` });
+                showToast('✅ 저장 완료!');
+              } catch(e) {
+                if (e.name !== 'AbortError') fallbackDownload(canvas);
+              }
+            } else {
+              fallbackDownload(canvas);
+            }
+            btn.disabled = false;
+            btn.textContent = '📥 갤러리에 저장';
+          });
+        } else {
+          fallbackDownload(canvas);
+          btn.disabled = false;
+          btn.textContent = '📥 갤러리에 저장';
+        }
+      } catch(e) {
+        btn.disabled = false;
+        btn.textContent = '📥 갤러리에 저장';
+        showToast('저장 실패. 다시 시도해주세요.');
+      }
+    }
+
+    function drawCardCanvas() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 600;
+      canvas.height = 840;
+      const ctx = canvas.getContext('2d');
+      const { cardNum, isRare } = cardData;
+      const idx = (cardNum - 1) % cardGradients.length;
+      const [c1, c2, c3] = cardGradients[idx];
+
+      // 배경
+      ctx.fillStyle = '#0d0d1a';
+      ctx.fillRect(0, 0, 600, 840);
+
+      const cx = 20, cy = 20, cw = 560, ch = 800, r = 32;
+
+      function rr(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x+r, y);
+        ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+        ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+        ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+        ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y);
+        ctx.closePath();
+      }
+
+      // 카드 배경
+      const bg = ctx.createLinearGradient(cx, cy, cx+cw, cy+ch);
+      if (isRare) {
+        bg.addColorStop(0, '#0a0510'); bg.addColorStop(0.5, '#150a20'); bg.addColorStop(1, '#0a1520');
+      } else {
+        bg.addColorStop(0, c1); bg.addColorStop(0.5, c2); bg.addColorStop(1, c3);
+      }
+      ctx.fillStyle = bg; rr(cx, cy, cw, ch, r); ctx.fill();
+
+      // 테두리
+      const bd = ctx.createLinearGradient(cx, cy, cx+cw, cy+ch);
+      if (isRare) {
+        bd.addColorStop(0, '#fbbf24'); bd.addColorStop(0.33, '#ef4444');
+        bd.addColorStop(0.66, '#8b5cf6'); bd.addColorStop(1, '#fbbf24');
+      } else {
+        bd.addColorStop(0, '#a78bfa'); bd.addColorStop(0.5, '#6366f1'); bd.addColorStop(1, '#38bdf8');
+      }
+      ctx.strokeStyle = bd; ctx.lineWidth = isRare ? 5 : 4;
+      rr(cx, cy, cw, ch, r); ctx.stroke();
+
+      // 아트워크 영역
+      const ax = cx+28, ay = cy+80, aw = cw-56, ah = 560;
+      const ag = ctx.createLinearGradient(ax, ay, ax+aw, ay+ah);
+      ag.addColorStop(0, isRare ? '#0a0518' : c1+'cc');
+      ag.addColorStop(1, isRare ? '#100820' : c3+'cc');
+      ctx.fillStyle = ag; rr(ax, ay, aw, ah, 16); ctx.fill();
+
+      // 번호 플레이스홀더
+      ctx.fillStyle = isRare ? 'rgba(251,191,36,0.12)' : 'rgba(255,255,255,0.07)';
+      ctx.font = 'bold 140px Arial';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(cardNum, ax+aw/2, ay+ah/2);
+
+      ctx.fillStyle = isRare ? 'rgba(251,191,36,0.35)' : 'rgba(255,255,255,0.22)';
+      ctx.font = '28px Arial';
+      ctx.fillText('작품 준비 중', ax+aw/2, ay+ah/2+90);
+
+      // 카드 번호
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.font = '22px Arial'; ctx.textAlign = 'left';
+      ctx.fillText(`#${String(cardNum).padStart(3,'0')}`, cx+32, cy+48);
+
+      // 레어 배지
+      if (isRare) {
+        ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 22px Arial';
+        ctx.textAlign = 'right';
+        ctx.fillText('✨ RARE', cx+cw-32, cy+48);
+      }
+
+      // 타이틀
+      ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.font = 'bold 32px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`작품 ${cardNum}`, cx+cw/2, cy+ch-80);
+
+      ctx.fillStyle = isRare ? '#fbbf24' : 'rgba(255,255,255,0.3)';
+      ctx.font = '20px Arial';
+      ctx.fillText(isRare ? '✨ RARE 카드깡 컬렉션 · 2026' : '카드깡 컬렉션 · 2026', cx+cw/2, cy+ch-44);
+
+      // 코너
+      ctx.strokeStyle = isRare ? 'rgba(251,191,36,0.7)' : 'rgba(139,92,246,0.6)';
+      ctx.lineWidth = 3;
+      [[cx+14,cy+14,1,1],[cx+cw-14,cy+14,-1,1],[cx+14,cy+ch-14,1,-1],[cx+cw-14,cy+ch-14,-1,-1]].forEach(([x,y,dx,dy])=>{
+        ctx.beginPath();
+        ctx.moveTo(x,y); ctx.lineTo(x+28*dx,y);
+        ctx.moveTo(x,y); ctx.lineTo(x,y+28*dy);
+        ctx.stroke();
+      });
+
+      return canvas;
+    }
+
+    function fallbackDownload(canvas) {
+      const a = document.createElement('a');
+      a.download = `card_${cardData.cardNum}${cardData.isRare ? '_rare' : ''}.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+      showToast('✅ 이미지 저장됨!');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    function goRetry() {
+      window.close();
+    }
+
+    // ── 초기화 ──
+    function init() {
+      const params = new URLSearchParams(window.location.search);
+      const tokenStr = params.get('t');
+      const isPreview = params.get('preview') === '1';
+
+      if (!tokenStr) {
+        showError('❌', '유효하지 않은 접근입니다.');
+        return;
+      }
+
+      const data = parseToken(tokenStr);
+
+      if (!data) {
+        showError('❌', '유효하지 않은 QR 코드입니다.');
+        return;
+      }
+
+      // 미리보기 모드: 만료/중복 체크 안 함
+      if (!isPreview) {
+        // 만료 확인 (30초)
+        if (Date.now() - data.ts > EXPIRE_MS) {
+          showError('⏰', 'QR 코드가 만료되었습니다.\nQR 코드를 다시 생성해주세요.');
+          return;
+        }
+
+        // 동일 세션 중복 사용 방지
+        const usedKey = `used_${tokenStr}`;
+        if (sessionStorage.getItem(usedKey)) {
+          showError('🔒', '이미 사용된 QR 코드입니다.\nQR 코드를 다시 생성해주세요.');
+          return;
+        }
+        sessionStorage.setItem(usedKey, '1');
+      }
+
+      document.getElementById('screenLoading').classList.add('hidden');
+      document.getElementById('screenMain').classList.remove('hidden');
+      setupCard(data.cardNum, data.isRare);
+
+      // 미리보기는 자동 오픈
+      if (isPreview) {
+        setTimeout(() => {
+          cardOpened = true;
+          document.getElementById('cardFlipper').classList.add('flipped');
+          if (data.isRare) setTimeout(spawnSparkles, 800);
+          document.getElementById('actionButtons').classList.remove('hidden');
+        }, 400);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
