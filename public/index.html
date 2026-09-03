@@ -9,12 +9,8 @@
   <style>
     :root {
       --accent: #ccff00;
-      --bg: #ffffff;
-      --surface: #f4f4f4;
-      --border: #1a1a1a;
-      --border-light: #e0e0e0;
       --text: #0a0a0a;
-      --muted: #999999;
+      --muted: #888;
       --font: 'Space Grotesk', 'Helvetica Neue', Arial, sans-serif;
     }
 
@@ -22,7 +18,10 @@
 
     body {
       min-height: 100vh;
-      background: var(--bg);
+      background: #ededeb;
+      background-image:
+        radial-gradient(circle at 12% 18%, rgba(204,255,0,0.13) 0%, transparent 38%),
+        radial-gradient(circle at 88% 82%, rgba(160,180,255,0.1) 0%, transparent 38%);
       color: var(--text);
       font-family: var(--font);
       display: flex;
@@ -36,7 +35,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 28px;
+      gap: 26px;
       width: 100%;
       max-width: 420px;
     }
@@ -51,87 +50,86 @@
       color: var(--text);
     }
 
-    /* Accent dot */
-    .header h1 span {
+    .header h1 em {
       display: inline-block;
-      width: 10px; height: 10px;
+      width: 9px; height: 9px;
       background: var(--accent);
       border-radius: 50%;
-      margin-left: 4px;
+      margin-left: 3px;
       vertical-align: middle;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
+      font-style: normal;
     }
 
     .header p {
       margin-top: 6px;
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       color: var(--muted);
-      letter-spacing: 0.02em;
     }
 
-    /* QR frame */
+    /* QR frame (glass) */
     .qr-wrap {
       position: relative;
-      width: 280px;
-      height: 280px;
-      border: 1.5px solid var(--border);
-      border-radius: 16px;
-      background: #fff;
+      width: 280px; height: 280px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.65);
+      -webkit-backdrop-filter: blur(20px) saturate(150%);
+      backdrop-filter: blur(20px) saturate(150%);
+      border: 1px solid rgba(255,255,255,0.88);
+      box-shadow: 0 4px 28px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,1);
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
     }
 
-    /* Green top accent on QR frame */
+    /* Green top accent */
     .qr-wrap::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 3px;
       background: var(--accent);
+      z-index: 1;
     }
 
-    #qrCanvas { border-radius: 8px; }
+    #qrCanvas { border-radius: 10px; }
 
     .qr-loading {
       position: absolute;
       inset: 0;
-      background: #fff;
+      background: rgba(255,255,255,0.5);
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .spinner {
-      width: 28px; height: 28px;
-      border: 2px solid var(--border-light);
+      width: 26px; height: 26px;
+      border: 2px solid rgba(0,0,0,0.08);
       border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Buttons */
+    /* Primary button */
     .btn-primary {
       width: 280px;
       padding: 14px;
       background: var(--accent);
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       color: var(--text);
-      font-size: 0.9rem;
-      font-weight: 700;
-      font-family: var(--font);
+      font: 700 0.9rem/1 var(--font);
       cursor: pointer;
       letter-spacing: 0.03em;
       text-align: center;
       text-decoration: none;
       display: block;
+      box-shadow: 0 4px 20px rgba(204,255,0,0.3);
       transition: opacity 0.15s;
     }
-
     .btn-primary:hover { opacity: 0.88; }
 
     /* Divider */
@@ -140,32 +138,34 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      color: var(--muted);
-      font-size: 0.72rem;
-      letter-spacing: 0.06em;
+      color: rgba(0,0,0,0.3);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
     }
-
     .divider::before, .divider::after {
       content: '';
       flex: 1;
       height: 1px;
-      background: var(--border-light);
+      background: rgba(0,0,0,0.1);
     }
 
-    /* Test section */
+    /* Test section (glass) */
     .test-section {
       width: 280px;
-      border: 1.5px solid var(--border-light);
-      border-radius: 12px;
+      background: rgba(255,255,255,0.55);
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.85);
+      border-radius: 14px;
       padding: 14px;
-      background: var(--surface);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.05);
     }
 
     .test-label {
-      font-size: 0.68rem;
+      font-size: 0.66rem;
       font-weight: 600;
       letter-spacing: 0.1em;
-      color: var(--muted);
+      color: rgba(0,0,0,0.35);
       margin-bottom: 10px;
       text-transform: uppercase;
     }
@@ -178,37 +178,33 @@
 
     .btn-test {
       padding: 8px 4px;
-      background: #fff;
-      border: 1.5px solid var(--border-light);
-      border-radius: 7px;
-      color: var(--text);
-      font-size: 0.74rem;
-      font-weight: 500;
-      font-family: var(--font);
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 8px;
+      color: rgba(0,0,0,0.65);
+      font: 500 0.72rem/1 var(--font);
       cursor: pointer;
       text-align: center;
-      transition: border-color 0.13s, background 0.13s;
+      transition: background 0.12s, border-color 0.12s;
     }
-
-    .btn-test:hover { border-color: var(--border); background: var(--surface); }
+    .btn-test:hover { background: rgba(255,255,255,0.9); border-color: rgba(0,0,0,0.16); }
 
     .btn-test.rare {
-      border-color: var(--accent);
-      background: rgba(204,255,0,0.08);
-      color: var(--text);
+      border-color: rgba(204,255,0,0.5);
+      background: rgba(204,255,0,0.1);
+      color: rgba(0,0,0,0.7);
       font-weight: 700;
       grid-column: span 3;
       letter-spacing: 0.04em;
     }
-
-    .btn-test.rare:hover { background: rgba(204,255,0,0.18); }
+    .btn-test.rare:hover { background: rgba(204,255,0,0.2); }
   </style>
 </head>
 <body>
   <div class="container">
 
     <div class="header">
-      <h1>카드깡<span></span></h1>
+      <h1>카드깡<em></em></h1>
       <p>QR 코드를 스캔하면 카드를 뽑을 수 있습니다</p>
     </div>
 
@@ -229,31 +225,28 @@
   </div>
 
   <script>
-    const BASE = 'https://audgmlrhkr0-sys.github.io/random-card';
-    const SECRET = 'cgk26_9qM_rnd';
+    const BASE    = 'https://audgmlrhkr0-sys.github.io/random-card';
+    const SECRET  = 'cgk26_9qM_rnd';
+    const CARD_COUNT = 23;
 
-    function simpleHash(str) {
-      let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
-      for (let i = 0; i < str.length; i++) {
-        const c = str.charCodeAt(i);
-        h1 = Math.imul(h1 ^ c, 2654435761);
-        h2 = Math.imul(h2 ^ c, 1597334677);
-      }
-      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-      return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+    function simpleHash(s) {
+      let h1=0xdeadbeef,h2=0x41c6ce57;
+      for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677);}
+      h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);
+      h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);
+      return(4294967296*(2097151&h2)+(h1>>>0)).toString(36);
     }
 
     function makeToken(cardNum, isRare) {
       const ts = Date.now();
-      const payload = `${cardNum}:${isRare ? 1 : 0}:${ts}`;
-      const sig = simpleHash(payload + SECRET);
-      return btoa(payload + ':' + sig).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+      const payload = `${cardNum}:${isRare?1:0}:${ts}`;
+      const sig = simpleHash(payload+SECRET);
+      return btoa(payload+':'+sig).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
     }
 
     async function buildQR() {
       const cvs = document.getElementById('qrCanvas');
-      const loading = document.getElementById('qrLoading');
+      const ld  = document.getElementById('qrLoading');
       try {
         await QRCode.toCanvas(cvs, `${BASE}/card.html`, {
           width: 256, margin: 2,
@@ -261,25 +254,25 @@
           color: { dark: '#1a1a1a', light: '#ffffff' }
         });
         cvs.style.display = 'block';
-        loading.style.display = 'none';
+        ld.style.display = 'none';
       } catch {
-        loading.innerHTML = '<p style="font-size:0.8rem;color:#999;padding:16px;text-align:center">QR 생성 실패</p>';
+        ld.innerHTML = '<p style="font-size:0.78rem;color:#888;padding:16px;text-align:center">QR 생성 실패</p>';
       }
     }
 
     function buildTestButtons() {
       const grid = document.getElementById('testGrid');
-      for (let i = 1; i <= 15; i++) {
+      for (let i = 1; i <= CARD_COUNT; i++) {
         const btn = document.createElement('button');
         btn.className = 'btn-test';
         btn.textContent = `카드 ${i}`;
-        btn.onclick = () => window.open(`${BASE}/card.html?t=${makeToken(i, false)}&preview=1`, '_blank');
+        btn.onclick = () => window.open(`${BASE}/card.html?t=${makeToken(i,false)}&preview=1`, '_blank');
         grid.appendChild(btn);
       }
       const rare = document.createElement('button');
       rare.className = 'btn-test rare';
       rare.textContent = 'RARE 카드 확인';
-      rare.onclick = () => window.open(`${BASE}/card.html?t=${makeToken(1, true)}&preview=1`, '_blank');
+      rare.onclick = () => window.open(`${BASE}/card.html?t=${makeToken(1,true)}&preview=1`, '_blank');
       grid.appendChild(rare);
     }
 

@@ -8,19 +8,20 @@
   <style>
     :root {
       --accent: #ccff00;
-      --bg: #ffffff;
-      --surface: #f4f4f4;
-      --border: #1a1a1a;
-      --border-light: #e0e0e0;
       --text: #0a0a0a;
-      --muted: #999999;
+      --muted: #888;
       --font: 'Space Grotesk', 'Helvetica Neue', Arial, sans-serif;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; overflow: hidden; background: var(--bg); }
+    html, body { height: 100%; overflow: hidden; }
 
     body {
+      background: #ededeb;
+      background-image:
+        radial-gradient(circle at 12% 18%, rgba(204,255,0,0.14) 0%, transparent 38%),
+        radial-gradient(circle at 88% 82%, rgba(160,180,255,0.11) 0%, transparent 38%),
+        radial-gradient(circle at 88% 12%, rgba(255,200,200,0.08) 0%, transparent 32%);
       color: var(--text);
       font-family: var(--font);
       display: flex;
@@ -32,7 +33,19 @@
       -webkit-user-select: none;
     }
 
-    /* ── Screens ─────────────────────────────── */
+    /* Glass mixin used throughout */
+    .glass {
+      background: rgba(255,255,255,0.6);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      backdrop-filter: blur(20px) saturate(160%);
+      border: 1px solid rgba(255,255,255,0.85);
+      box-shadow:
+        0 2px 24px rgba(0,0,0,0.07),
+        inset 0 1px 0 rgba(255,255,255,1),
+        inset 0 -1px 0 rgba(0,0,0,0.02);
+    }
+
+    /* ── Screens ─────────────────────────────────── */
     .screen {
       position: fixed;
       inset: 0;
@@ -42,65 +55,79 @@
       justify-content: center;
       gap: 14px;
       z-index: 50;
-      background: var(--bg);
     }
     .screen.gone { display: none; }
 
+    .screen-loading { background: #ededeb; }
+
     .spinner {
-      width: 30px; height: 30px;
-      border: 2px solid var(--border-light);
+      width: 28px; height: 28px;
+      border: 2px solid rgba(0,0,0,0.08);
       border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    .screen-error {
+      background: rgba(237,237,235,0.85);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+    }
+
+    .err-box {
+      background: rgba(255,255,255,0.7);
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.9);
+      border-radius: 18px;
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+
     .err-msg {
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       font-weight: 500;
       color: var(--text);
       text-align: center;
       line-height: 1.65;
-      max-width: 240px;
+      max-width: 220px;
       white-space: pre-line;
     }
 
     .btn-close {
-      padding: 10px 26px;
+      padding: 10px 24px;
       background: var(--text);
       border: none;
       border-radius: 8px;
       color: #fff;
-      font-size: 0.86rem;
-      font-weight: 600;
-      font-family: var(--font);
+      font: 600 0.84rem/1 var(--font);
       cursor: pointer;
-      letter-spacing: 0.03em;
     }
 
-    /* ── Main ────────────────────────────────── */
-    .main {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 22px;
-    }
+    /* ── Main ────────────────────────────────────── */
+    .main { display: flex; flex-direction: column; align-items: center; gap: 24px; }
     .main.gone { display: none; }
 
-    /* ── Stage ───────────────────────────────── */
+    /* ── Stage (perspective) ─────────────────────── */
     .stage {
       position: relative;
       width: 260px;
       height: 380px;
       perspective: 900px;
+      transform-style: preserve-3d;
     }
 
-    /* ── Card ────────────────────────────────── */
+    /* ── Card ────────────────────────────────────── */
     .card-container {
       position: absolute;
       inset: 0;
       opacity: 0;
-      transform: scale(0.88) translateY(16px);
+      transform: scale(0.88) translateY(18px);
       pointer-events: none;
     }
 
@@ -108,22 +135,25 @@
       width: 100%; height: 100%;
       position: relative;
       transform-style: preserve-3d;
-      transition: transform 0.75s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform 0.75s cubic-bezier(0.4,0,0.2,1);
     }
     .card-flipper.flipped { transform: rotateY(180deg); }
 
     .card-face {
       position: absolute;
       inset: 0;
-      border-radius: 14px;
+      border-radius: 18px;
       backface-visibility: hidden;
       -webkit-backface-visibility: hidden;
     }
 
-    /* Back face */
+    /* Card back */
     .c-back {
-      background: var(--surface);
-      border: 1.5px solid var(--border);
+      background: rgba(255,255,255,0.55);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.8);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -136,26 +166,42 @@
       inset: 0;
       background: repeating-linear-gradient(
         -45deg,
-        transparent 0, transparent 4px,
-        rgba(0,0,0,0.035) 4px, rgba(0,0,0,0.035) 5px
+        transparent 0, transparent 5px,
+        rgba(0,0,0,0.025) 5px, rgba(0,0,0,0.025) 6px
       );
     }
 
     .c-back-label {
       position: relative;
-      font-size: 0.6rem;
+      font-size: 0.58rem;
       font-weight: 700;
       letter-spacing: 0.28em;
-      color: rgba(0,0,0,0.18);
+      color: rgba(0,0,0,0.15);
       text-transform: uppercase;
     }
 
-    /* Front face */
+    /* Card front */
     .c-front {
       transform: rotateY(180deg);
-      background: #fff;
-      border: 1.5px solid var(--border);
       overflow: hidden;
+      background: rgba(255,255,255,0.7);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      backdrop-filter: blur(24px) saturate(160%);
+      border: 1px solid rgba(255,255,255,0.92);
+      box-shadow:
+        0 8px 40px rgba(0,0,0,0.10),
+        0 2px 8px rgba(0,0,0,0.04),
+        inset 0 1px 0 rgba(255,255,255,1);
+    }
+
+    /* Rare card - green glow */
+    .c-front.is-rare {
+      border-color: rgba(204,255,0,0.7);
+      box-shadow:
+        0 0 0 1px rgba(204,255,0,0.5),
+        0 0 32px rgba(204,255,0,0.22),
+        0 8px 40px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,1);
     }
 
     /* Top accent line */
@@ -163,15 +209,11 @@
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 3px;
-      background: var(--border-light);
-      z-index: 3;
+      background: rgba(0,0,0,0.07);
+      z-index: 10;
+      border-radius: 18px 18px 0 0;
     }
 
-    /* Rare card overrides */
-    .c-front.is-rare {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px var(--accent), 0 0 28px rgba(204,255,0,0.2);
-    }
     .c-front.is-rare .card-top-line { background: var(--accent); }
 
     /* Rare shimmer */
@@ -180,35 +222,35 @@
       position: absolute;
       inset: 0;
       background: linear-gradient(
-        120deg,
-        transparent 28%, rgba(204,255,0,0.05) 43%,
-        rgba(204,255,0,0.1) 50%, rgba(204,255,0,0.05) 57%,
+        122deg,
+        transparent 28%, rgba(204,255,0,0.05) 42%,
+        rgba(204,255,0,0.11) 50%, rgba(204,255,0,0.05) 58%,
         transparent 72%
       );
       background-size: 200% 200%;
       animation: holoShift 3s ease-in-out infinite alternate;
       pointer-events: none;
-      z-index: 5;
+      z-index: 6;
+      border-radius: inherit;
     }
     @keyframes holoShift {
       0% { background-position: 0% 0%; }
       100% { background-position: 100% 100%; }
     }
 
-    /* Sparkles (rare) */
+    /* Sparkles */
     .sparkles {
-      position: absolute;
-      inset: 0;
+      position: absolute; inset: 0;
       pointer-events: none;
       overflow: visible;
-      z-index: 10;
+      z-index: 12;
     }
-
     .sparkle {
       position: absolute;
       border-radius: 50%;
       animation: sparkAnim var(--dur,1.5s) ease-in-out var(--delay,0s) infinite;
       background: var(--color, var(--accent));
+      box-shadow: 0 0 4px var(--color, var(--accent));
     }
     @keyframes sparkAnim {
       0% { transform: scale(0); opacity: 0; }
@@ -217,103 +259,115 @@
       100% { transform: scale(0) rotate(360deg) translate(var(--tx,0), var(--ty,0)); opacity: 0; }
     }
 
-    /* Card content */
-    .card-inner {
+    /* Card layout */
+    .card-layout {
       position: relative;
       z-index: 2;
       height: 100%;
       display: flex;
       flex-direction: column;
-      padding: 13px;
-      gap: 10px;
     }
 
-    .card-header { display: flex; justify-content: space-between; align-items: center; }
-
-    .cn-label {
-      font-size: 0.67rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      color: var(--muted);
-    }
-
-    .rare-badge {
-      display: none;
-      font-size: 0.6rem;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      color: var(--text);
-      background: var(--accent);
-      padding: 2px 8px;
-      border-radius: 3px;
-    }
-
+    /* Artwork fills top portion */
     .artwork-area {
       flex: 1;
-      border-radius: 6px;
-      background: var(--surface);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      position: relative;
       overflow: hidden;
+      border-radius: 17px 17px 0 0;
+      background: rgba(240,240,238,0.8);
     }
 
-    .artwork-area img {
+    .artwork-img {
+      position: absolute;
+      inset: 0;
       width: 100%; height: 100%;
       object-fit: cover;
     }
 
     .art-placeholder {
+      position: absolute;
+      inset: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 100%; height: 100%;
       gap: 4px;
     }
 
     .art-num {
-      font-size: 3rem;
+      font-size: 3.5rem;
       font-weight: 700;
-      color: rgba(0,0,0,0.07);
+      color: rgba(0,0,0,0.06);
     }
 
     .art-lbl {
-      font-size: 0.7rem;
-      color: rgba(0,0,0,0.25);
-      letter-spacing: 0.04em;
+      font-size: 0.68rem;
+      color: rgba(0,0,0,0.2);
+      letter-spacing: 0.05em;
     }
 
-    .card-footer { padding: 2px 0; }
+    /* Frosted glass info strip */
+    .card-info {
+      padding: 11px 14px 12px;
+      background: rgba(255,255,255,0.82);
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255,255,255,0.7);
+      flex-shrink: 0;
+    }
+
+    .info-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .cn-label {
+      font-size: 0.64rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: rgba(0,0,0,0.35);
+    }
+
+    .rare-badge {
+      display: none;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--text);
+      background: var(--accent);
+      padding: 2px 7px;
+      border-radius: 3px;
+    }
 
     .card-title {
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       font-weight: 700;
-      text-align: center;
       color: var(--text);
     }
 
     .card-series {
-      font-size: 0.65rem;
-      text-align: center;
+      font-size: 0.63rem;
       color: var(--muted);
-      margin-top: 2px;
-      letter-spacing: 0.04em;
+      margin-top: 1px;
+      letter-spacing: 0.03em;
     }
 
     /* Corner accents */
     .c-corner {
       position: absolute;
       width: 14px; height: 14px;
-      z-index: 3;
-      border-color: var(--border-light);
+      z-index: 8;
+      border-color: rgba(0,0,0,0.12);
     }
-    .c-tl { top: 9px; left: 9px; border-top: 1.5px solid; border-left: 1.5px solid; border-radius: 2px 0 0 0; }
-    .c-tr { top: 9px; right: 9px; border-top: 1.5px solid; border-right: 1.5px solid; border-radius: 0 2px 0 0; }
-    .c-bl { bottom: 9px; left: 9px; border-bottom: 1.5px solid; border-left: 1.5px solid; border-radius: 0 0 0 2px; }
-    .c-br { bottom: 9px; right: 9px; border-bottom: 1.5px solid; border-right: 1.5px solid; border-radius: 0 0 2px 0; }
+    .c-tl { top: 10px; left: 10px; border-top: 1.5px solid; border-left: 1.5px solid; border-radius: 3px 0 0 0; }
+    .c-tr { top: 10px; right: 10px; border-top: 1.5px solid; border-right: 1.5px solid; border-radius: 0 3px 0 0; }
+    .c-bl { bottom: 10px; left: 10px; border-bottom: 1.5px solid; border-left: 1.5px solid; border-radius: 0 0 0 3px; }
+    .c-br { bottom: 10px; right: 10px; border-bottom: 1.5px solid; border-right: 1.5px solid; border-radius: 0 0 3px 0; }
+    .c-front.is-rare .c-corner { border-color: rgba(204,255,0,0.7); }
 
-    /* ── Pack ────────────────────────────────── */
+    /* ── Pack ────────────────────────────────────── */
     .pack-wrap {
       position: absolute;
       inset: 0;
@@ -325,153 +379,176 @@
       50% { transform: translateY(-6px); }
     }
 
-    .pack-flap {
+    /* Pack top (tears off upward) */
+    .pack-top {
       position: absolute;
       top: 0; left: 0; right: 0;
-      height: 40%;
-      transform-origin: center bottom;
-      transform-style: preserve-3d;
-      will-change: transform;
-    }
-
-    .flap-front, .flap-back {
-      position: absolute;
-      inset: 0;
-      border-radius: 14px 14px 0 0;
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
-      overflow: hidden;
-    }
-
-    .flap-front {
-      background: #fff;
-      border: 1.5px solid var(--border);
+      height: 38%;
+      border-radius: 18px 18px 0 0;
+      background: rgba(255,255,255,0.65);
+      -webkit-backdrop-filter: blur(18px) saturate(150%);
+      backdrop-filter: blur(18px) saturate(150%);
+      border: 1px solid rgba(255,255,255,0.88);
       border-bottom: none;
+      box-shadow:
+        0 -2px 16px rgba(0,0,0,0.04),
+        inset 0 1px 0 rgba(255,255,255,1);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 3px;
+      overflow: hidden;
+      will-change: transform, opacity;
+      transform-style: preserve-3d;
     }
 
-    /* Fluorescent green top stripe */
-    .flap-front::before {
+    /* Green top stripe on pack */
+    .pack-top::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 4px;
       background: var(--accent);
+      border-radius: 18px 18px 0 0;
     }
 
-    .flap-back {
-      transform: rotateX(180deg);
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-bottom: none;
+    /* Glass sheen on pack top */
+    .pack-top::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, transparent 60%);
+      pointer-events: none;
     }
 
-    .pack-name {
-      font-size: 0.68rem;
+    .pack-top-name {
+      position: relative;
+      z-index: 1;
+      font-size: 0.65rem;
       font-weight: 700;
       letter-spacing: 0.24em;
-      color: var(--text);
+      color: rgba(0,0,0,0.55);
       text-transform: uppercase;
-      position: relative;
-      z-index: 1;
     }
 
-    .pack-sub-name {
-      font-size: 0.55rem;
+    .pack-top-sub {
+      position: relative;
+      z-index: 1;
+      font-size: 0.52rem;
       font-weight: 500;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-      position: relative;
-      z-index: 1;
-    }
-
-    .pack-body {
-      position: absolute;
-      top: 40%; left: 0; right: 0; bottom: 0;
-      background: var(--surface);
-      border-radius: 0 0 14px 14px;
-      border: 1.5px solid var(--border);
-      border-top: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      will-change: transform, opacity;
-    }
-
-    .body-title {
-      font-size: 0.72rem;
-      font-weight: 600;
       letter-spacing: 0.1em;
       color: rgba(0,0,0,0.3);
     }
 
-    .body-year {
-      font-size: 0.58rem;
+    /* Pack bottom (drops when torn) */
+    .pack-bottom {
+      position: absolute;
+      top: 38%; left: 0; right: 0; bottom: 0;
+      border-radius: 0 0 18px 18px;
+      background: rgba(255,255,255,0.55);
+      -webkit-backdrop-filter: blur(18px) saturate(150%);
+      backdrop-filter: blur(18px) saturate(150%);
+      border: 1px solid rgba(255,255,255,0.88);
+      border-top: none;
+      box-shadow:
+        0 4px 24px rgba(0,0,0,0.07),
+        inset 0 -1px 0 rgba(0,0,0,0.02);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      overflow: hidden;
+      will-change: transform, opacity;
+    }
+
+    /* Glass sheen on pack bottom */
+    .pack-bottom::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.15) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .pack-bottom-brand {
+      position: relative;
+      z-index: 1;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: rgba(0,0,0,0.28);
+    }
+
+    .pack-bottom-year {
+      position: relative;
+      z-index: 1;
+      font-size: 0.56rem;
       letter-spacing: 0.12em;
-      color: rgba(0,0,0,0.18);
+      color: rgba(0,0,0,0.16);
     }
 
     /* Perforated tear line */
     .tear-line {
       position: absolute;
       left: 0; right: 0;
-      top: calc(40% - 1px);
+      top: calc(38% - 0.5px);
       height: 1px;
       background: repeating-linear-gradient(
         90deg,
-        var(--border) 0, var(--border) 4px,
+        rgba(0,0,0,0.18) 0, rgba(0,0,0,0.18) 4px,
         transparent 4px, transparent 9px
       );
       z-index: 20;
       pointer-events: none;
     }
 
-    /* ── Drag hint ───────────────────────────── */
+    /* ── Drag hint ───────────────────────────────── */
     .drag-hint {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       transition: opacity 0.3s;
     }
 
     .hint-arrow {
-      width: 24px; height: 24px;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.7);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.9);
       display: flex;
       align-items: center;
       justify-content: center;
       animation: bounceUp 1.1s ease-in-out infinite;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
 
-    /* CSS arrow (no emoji) */
     .hint-arrow::before {
       content: '';
       display: block;
-      width: 10px; height: 10px;
-      border-top: 2px solid var(--text);
-      border-right: 2px solid var(--text);
-      transform: rotate(-45deg) translateY(3px);
+      width: 9px; height: 9px;
+      border-top: 2px solid rgba(0,0,0,0.55);
+      border-right: 2px solid rgba(0,0,0,0.55);
+      transform: rotate(-45deg) translateY(2px);
     }
 
     @keyframes bounceUp {
       0%,100% { transform: translateY(0); }
-      50% { transform: translateY(-7px); }
+      50% { transform: translateY(-8px); }
     }
 
     .hint-text {
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       font-weight: 500;
-      color: var(--muted);
+      color: rgba(0,0,0,0.4);
       letter-spacing: 0.04em;
     }
 
-    /* ── Action buttons ──────────────────────── */
+    /* ── Action buttons ──────────────────────────── */
     .action-btns {
       display: flex;
       flex-direction: column;
@@ -484,13 +561,12 @@
       padding: 14px;
       background: var(--accent);
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       color: var(--text);
-      font-size: 0.9rem;
-      font-weight: 700;
-      font-family: var(--font);
+      font: 700 0.9rem/1 var(--font);
       cursor: pointer;
       letter-spacing: 0.03em;
+      box-shadow: 0 4px 20px rgba(204,255,0,0.35);
       transition: opacity 0.15s, transform 0.12s;
     }
     .btn-save:hover { opacity: 0.88; }
@@ -499,32 +575,33 @@
 
     .btn-retry {
       padding: 13px;
-      background: transparent;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      color: var(--text);
-      font-size: 0.88rem;
-      font-weight: 600;
-      font-family: var(--font);
+      background: rgba(255,255,255,0.6);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.85);
+      border-radius: 12px;
+      color: rgba(0,0,0,0.6);
+      font: 600 0.86rem/1 var(--font);
       cursor: pointer;
       letter-spacing: 0.02em;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
       transition: background 0.15s;
     }
-    .btn-retry:hover { background: var(--surface); }
+    .btn-retry:hover { background: rgba(255,255,255,0.8); }
 
-    /* ── Toast ───────────────────────────────── */
+    /* ── Toast ───────────────────────────────────── */
     .toast {
       position: fixed;
       bottom: 36px;
       left: 50%;
       transform: translateX(-50%) translateY(12px);
-      background: var(--text);
-      border-radius: 8px;
+      background: rgba(10,10,10,0.88);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border-radius: 10px;
       padding: 10px 20px;
-      font-size: 0.82rem;
-      font-family: var(--font);
+      font: 500 0.82rem/1 var(--font);
       color: #fff;
-      font-weight: 500;
       opacity: 0;
       transition: all 0.28s;
       pointer-events: none;
@@ -537,14 +614,16 @@
 <body>
 
   <!-- Loading -->
-  <div class="screen" id="scrLoading">
+  <div class="screen screen-loading" id="scrLoading">
     <div class="spinner"></div>
   </div>
 
   <!-- Error -->
-  <div class="screen gone" id="scrError">
-    <div class="err-msg" id="errMsg"></div>
-    <button class="btn-close" onclick="window.close()">닫기</button>
+  <div class="screen screen-error gone" id="scrError">
+    <div class="err-box">
+      <div class="err-msg" id="errMsg"></div>
+      <button class="btn-close" onclick="window.close()">닫기</button>
+    </div>
   </div>
 
   <!-- Main -->
@@ -556,10 +635,12 @@
       <div class="card-container" id="cardContainer">
         <div class="card-flipper" id="cardFlipper">
 
+          <!-- Back face -->
           <div class="card-face c-back">
             <span class="c-back-label">Card Gacha</span>
           </div>
 
+          <!-- Front face -->
           <div class="card-face c-front" id="cardFront">
             <div class="card-top-line"></div>
             <div class="rare-holo" id="rareHolo"></div>
@@ -568,18 +649,19 @@
             <div class="c-corner c-tr"></div>
             <div class="c-corner c-bl"></div>
             <div class="c-corner c-br"></div>
-            <div class="card-inner">
-              <div class="card-header">
-                <span class="cn-label" id="cnLabel">#001</span>
-                <span class="rare-badge" id="rareBadge">RARE</span>
-              </div>
+
+            <div class="card-layout">
               <div class="artwork-area" id="artworkArea">
-                <div class="art-placeholder">
+                <div class="art-placeholder" id="artPlaceholder">
                   <div class="art-num" id="artNum">1</div>
                   <div class="art-lbl">작품 준비 중</div>
                 </div>
               </div>
-              <div class="card-footer">
+              <div class="card-info">
+                <div class="info-header">
+                  <span class="cn-label" id="cnLabel">#001</span>
+                  <span class="rare-badge" id="rareBadge">RARE</span>
+                </div>
                 <div class="card-title" id="cardTitle">작품 1</div>
                 <div class="card-series" id="cardSeries">카드깡 컬렉션 · 2026</div>
               </div>
@@ -589,18 +671,15 @@
         </div>
       </div>
 
-      <!-- Pack (front layer) -->
+      <!-- Pack (tears upward — real bag style) -->
       <div class="pack-wrap floating" id="packWrap">
-        <div class="pack-flap" id="packFlap">
-          <div class="flap-front">
-            <div class="pack-name">Card Gacha</div>
-            <div class="pack-sub-name">카드깡 컬렉션</div>
-          </div>
-          <div class="flap-back"></div>
+        <div class="pack-top" id="packTop">
+          <div class="pack-top-name">Card Gacha</div>
+          <div class="pack-top-sub">카드깡 컬렉션</div>
         </div>
-        <div class="pack-body" id="packBody">
-          <div class="body-title">카드깡</div>
-          <div class="body-year">2026</div>
+        <div class="pack-bottom" id="packBottom">
+          <div class="pack-bottom-brand">카드깡</div>
+          <div class="pack-bottom-year">2026</div>
         </div>
         <div class="tear-line" id="tearLine"></div>
       </div>
@@ -624,51 +703,52 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    const SECRET = 'cgk26_9qM_rnd';
-    const EXPIRE_MS = 30000;
+    const SECRET     = 'cgk26_9qM_rnd';
+    const EXPIRE_MS  = 30000;
+    const CARD_COUNT = 23;
+    const IMG_BASE   = './images/';
 
-    function simpleHash(str) {
-      let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
-      for (let i = 0; i < str.length; i++) {
-        const c = str.charCodeAt(i);
-        h1 = Math.imul(h1 ^ c, 2654435761);
-        h2 = Math.imul(h2 ^ c, 1597334677);
-      }
-      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-      return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+    // ── Token helpers ──
+    function simpleHash(s) {
+      let h1=0xdeadbeef, h2=0x41c6ce57;
+      for (let i=0;i<s.length;i++){const c=s.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677);}
+      h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);
+      h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);
+      return (4294967296*(2097151&h2)+(h1>>>0)).toString(36);
     }
 
     function parseToken(t) {
       try {
-        const pad = t.length % 4;
-        const decoded = atob((t + (pad ? '='.repeat(4 - pad) : '')).replace(/-/g,'+').replace(/_/g,'/'));
-        const [cn, ir, ts, sig] = decoded.split(':');
-        if (simpleHash(`${cn}:${ir}:${ts}` + SECRET) !== sig) return null;
-        return { cardNum: parseInt(cn), isRare: ir === '1', ts: parseInt(ts) };
-      } catch { return null; }
+        const pad=t.length%4;
+        const dec=atob((t+(pad?'='.repeat(4-pad):'')).replace(/-/g,'+').replace(/_/g,'/'));
+        const [cn,ir,ts,sig]=dec.split(':');
+        if(simpleHash(`${cn}:${ir}:${ts}`+SECRET)!==sig)return null;
+        return {cardNum:parseInt(cn),isRare:ir==='1',ts:parseInt(ts)};
+      } catch{return null;}
     }
 
     // ── State ──
     let cardData = null;
     let tearDone = false;
-    let dragStartY = null;
     let isDragging = false;
+    let dragStartY = null;
     let currentProgress = 0;
-    const DRAG_FULL = 155;
+    const DRAG_FULL = 150;
 
     // ── DOM ──
     const scrLoading   = document.getElementById('scrLoading');
     const scrError     = document.getElementById('scrError');
     const scrMain      = document.getElementById('scrMain');
     const packWrap     = document.getElementById('packWrap');
-    const packFlap     = document.getElementById('packFlap');
-    const packBody     = document.getElementById('packBody');
+    const packTop      = document.getElementById('packTop');
+    const packBottom   = document.getElementById('packBottom');
     const tearLine     = document.getElementById('tearLine');
     const dragHint     = document.getElementById('dragHint');
     const cardContainer = document.getElementById('cardContainer');
     const cardFlipper  = document.getElementById('cardFlipper');
     const cardFront    = document.getElementById('cardFront');
+    const artworkArea  = document.getElementById('artworkArea');
+    const artPlaceholder = document.getElementById('artPlaceholder');
     const actionBtns   = document.getElementById('actionBtns');
     const sparklesEl   = document.getElementById('sparkles');
 
@@ -676,7 +756,7 @@
     function setupCard(cardNum, isRare) {
       cardData = { cardNum, isRare };
 
-      document.getElementById('cnLabel').textContent = `#${String(cardNum).padStart(3, '0')}`;
+      document.getElementById('cnLabel').textContent = `#${String(cardNum).padStart(3,'0')}`;
       document.getElementById('artNum').textContent = cardNum;
       document.getElementById('cardTitle').textContent = `작품 ${cardNum}`;
 
@@ -685,21 +765,42 @@
         document.getElementById('rareBadge').style.display = 'block';
         document.getElementById('rareHolo').style.display = 'block';
         document.getElementById('cardSeries').textContent = 'RARE — 카드깡 컬렉션 · 2026';
-        document.getElementById('cardSeries').style.color = '#999';
-        // Green corners on rare
-        cardFront.querySelectorAll('.c-corner').forEach(c => c.style.borderColor = 'var(--accent)');
       }
+
+      // Load artwork image
+      const img = new Image();
+      img.className = 'artwork-img';
+      img.alt = `작품 ${cardNum}`;
+      img.onload = () => {
+        artworkArea.insertBefore(img, artPlaceholder);
+        artPlaceholder.style.display = 'none';
+      };
+      img.src = `${IMG_BASE}${cardNum}.png`;
     }
 
-    // ── Tear mechanics ──
+    // ── Tear mechanics ──────────────────────────────
+    // "봉지 뜯기": top portion LIFTS OFF (translateY up), not rotates back
+
     function applyTear(p) {
-      packFlap.style.transform = `rotateX(-${p * 172}deg)`;
-      packFlap.style.opacity = p > 0.7 ? String(1 - (p - 0.7) / 0.3) : '1';
-      packBody.style.transform = `translateY(${p * 14}px)`;
-      if (p > 0.5) packBody.style.opacity = String(1 - (p - 0.5) / 0.5);
-      tearLine.style.opacity = String(Math.max(0, 1 - p * 2));
-      cardContainer.style.opacity = String(Math.min(1, p * 1.7));
-      cardContainer.style.transform = `scale(${0.88 + p * 0.12}) translateY(${(1 - p) * 16}px)`;
+      // Pack top lifts upward with slight 3D tilt
+      const liftY  = p * 100;
+      const tiltX  = -p * 12;   // slight backward tilt (3D depth)
+      const tiltZ  = p * 4;     // very slight rotation
+      packTop.style.transform = `translateY(-${liftY}px) rotateX(${tiltX}deg) rotateZ(${tiltZ}deg)`;
+      packTop.style.opacity   = p > 0.72 ? String(1 - (p-0.72)/0.28) : '1';
+
+      // Pack bottom barely moves
+      packBottom.style.transform = `translateY(${p * 8}px)`;
+      packBottom.style.opacity   = p > 0.55 ? String(1 - (p-0.55)/0.45) : '1';
+
+      // Tear line fades as gap opens
+      tearLine.style.opacity = String(Math.max(0, 1 - p * 3.5));
+
+      // Card reveals from behind
+      cardContainer.style.opacity  = String(Math.min(1, p * 1.8));
+      cardContainer.style.transform = `scale(${0.88 + p*0.12}) translateY(${(1-p)*16}px)`;
+
+      // Hint fades quickly
       dragHint.style.opacity = String(Math.max(0, 1 - p * 5));
     }
 
@@ -707,54 +808,59 @@
       tearDone = true;
       packWrap.classList.remove('floating');
 
-      packFlap.style.transition = 'transform 0.46s ease-out, opacity 0.3s ease-out';
-      packFlap.style.transform = 'rotateX(-195deg) translateY(-48px)';
-      packFlap.style.opacity = '0';
+      // Top piece flies upward + slight curve
+      packTop.style.transition = 'transform 0.5s cubic-bezier(0.4,0,1,1), opacity 0.35s ease-out';
+      packTop.style.transform  = 'translateY(-320px) translateX(18px) rotateX(-18deg) rotateZ(7deg)';
+      packTop.style.opacity    = '0';
 
-      packBody.style.transition = 'transform 0.38s ease-in, opacity 0.3s ease-out';
-      packBody.style.transform = 'translateY(88px)';
-      packBody.style.opacity = '0';
+      // Bottom drops away
+      packBottom.style.transition = 'transform 0.4s ease-in, opacity 0.3s ease-out';
+      packBottom.style.transform  = 'translateY(200px) rotateZ(-3deg)';
+      packBottom.style.opacity    = '0';
 
-      tearLine.style.transition = 'opacity 0.2s';
       tearLine.style.opacity = '0';
       dragHint.style.opacity = '0';
 
+      // Card bounces in
       setTimeout(() => {
-        cardContainer.style.transition = 'transform 0.52s cubic-bezier(0.34,1.56,0.64,1), opacity 0.26s';
-        cardContainer.style.opacity = '1';
-        cardContainer.style.transform = 'scale(1) translateY(0)';
+        cardContainer.style.transition = 'transform 0.55s cubic-bezier(0.34,1.56,0.64,1), opacity 0.28s';
+        cardContainer.style.opacity    = '1';
+        cardContainer.style.transform  = 'scale(1) translateY(0)';
 
         setTimeout(() => {
           cardFlipper.classList.add('flipped');
           if (cardData.isRare) setTimeout(spawnSparkles, 640);
           setTimeout(() => actionBtns.classList.remove('gone'), 880);
         }, 460);
-      }, 200);
+      }, 180);
     }
 
     function snapBack() {
       const t = '0.4s cubic-bezier(0.34,1.56,0.64,1)';
-      packFlap.style.transition = `transform ${t}`;
-      packFlap.style.transform = 'rotateX(0deg)';
-      packFlap.style.opacity = '1';
-      packBody.style.transition = `transform ${t}, opacity ${t}`;
-      packBody.style.transform = 'translateY(0)';
-      packBody.style.opacity = '1';
-      tearLine.style.transition = 'opacity 0.3s';
-      tearLine.style.opacity = '1';
+      packTop.style.transition    = `transform ${t}`;
+      packTop.style.transform     = 'translateY(0) rotateX(0deg) rotateZ(0deg)';
+      packTop.style.opacity       = '1';
+      packBottom.style.transition = `transform ${t}, opacity ${t}`;
+      packBottom.style.transform  = 'translateY(0)';
+      packBottom.style.opacity    = '1';
+      tearLine.style.opacity      = '1';
       cardContainer.style.opacity = '0';
-      cardContainer.style.transform = 'scale(0.88) translateY(16px)';
+      cardContainer.style.transform = 'scale(0.88) translateY(18px)';
       dragHint.style.opacity = '1';
       currentProgress = 0;
       setTimeout(() => {
-        packFlap.style.transition = '';
-        packBody.style.transition = '';
-        tearLine.style.transition = '';
+        packTop.style.transition    = '';
+        packBottom.style.transition = '';
       }, 430);
     }
 
-    // ── Drag handlers ──
-    function onStart(y) { if (tearDone) return; dragStartY = y; isDragging = true; packWrap.classList.remove('floating'); }
+    // ── Drag events ──
+    function onStart(y) {
+      if (tearDone) return;
+      dragStartY = y;
+      isDragging = true;
+      packWrap.classList.remove('floating');
+    }
     function onMove(y) {
       if (!isDragging || tearDone) return;
       currentProgress = Math.max(0, Math.min(1, (dragStartY - y) / DRAG_FULL));
@@ -768,7 +874,7 @@
     }
 
     document.addEventListener('touchstart', e => onStart(e.touches[0].clientY), { passive: true });
-    document.addEventListener('touchmove', e => { e.preventDefault(); onMove(e.touches[0].clientY); }, { passive: false });
+    document.addEventListener('touchmove',  e => { e.preventDefault(); onMove(e.touches[0].clientY); }, { passive: false });
     document.addEventListener('touchend', onEnd);
     document.addEventListener('mousedown', e => onStart(e.clientY));
     document.addEventListener('mousemove', e => onMove(e.clientY));
@@ -776,98 +882,122 @@
 
     // ── Sparkles (rare) ──
     function spawnSparkles() {
-      const colors = ['#ccff00', '#a8ff00', '#e8ff80', '#ffffff', '#b8ff40'];
+      const colors = ['#ccff00','#a8ff00','#e8ff80','#ffffff','#f0ffb0'];
       for (let i = 0; i < 28; i++) {
         const el = document.createElement('div');
         el.className = 'sparkle';
-        const sz = Math.random() * 5 + 3;
+        const sz = Math.random()*5+3;
         el.style.cssText = `
-          width:${sz}px; height:${sz}px;
-          top:${Math.random()*100}%; left:${Math.random()*100}%;
+          width:${sz}px;height:${sz}px;
+          top:${Math.random()*100}%;left:${Math.random()*100}%;
           --color:${colors[~~(Math.random()*colors.length)]};
           --dur:${1.2+Math.random()*1.4}s;
           --delay:${Math.random()*1.8}s;
-          --tx:${(Math.random()-.5)*40}px;
-          --ty:${(Math.random()-.5)*40}px;
+          --tx:${(Math.random()-.5)*44}px;
+          --ty:${(Math.random()-.5)*44}px;
         `;
         sparklesEl.appendChild(el);
       }
     }
 
-    // ── Save ──
+    // ── Save (canvas) ──
     function drawCanvas() {
       const { cardNum, isRare } = cardData;
       const cvs = document.createElement('canvas');
       cvs.width = 600; cvs.height = 840;
       const ctx = cvs.getContext('2d');
-      const cx=20, cy=20, cw=560, ch=800, r=28;
+      const CX=20, CY=20, CW=560, CH=800, R=28;
 
-      function rr(x,y,w,h,rv) {
+      function rr(x,y,w,h,r){
         ctx.beginPath();
-        ctx.moveTo(x+rv,y); ctx.lineTo(x+w-rv,y); ctx.quadraticCurveTo(x+w,y,x+w,y+rv);
-        ctx.lineTo(x+w,y+h-rv); ctx.quadraticCurveTo(x+w,y+h,x+w-rv,y+h);
-        ctx.lineTo(x+rv,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-rv);
-        ctx.lineTo(x,y+rv); ctx.quadraticCurveTo(x,y,x+rv,y); ctx.closePath();
+        ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+        ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+        ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+        ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
       }
 
-      // White bg
-      ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,600,840);
+      // Background
+      ctx.fillStyle = '#ededeb'; ctx.fillRect(0,0,600,840);
 
-      // Card bg
-      ctx.fillStyle = '#ffffff'; rr(cx,cy,cw,ch,r); ctx.fill();
+      // Card shadow
+      ctx.shadowColor = 'rgba(0,0,0,0.12)';
+      ctx.shadowBlur = 32; ctx.shadowOffsetY = 8;
+      ctx.fillStyle = '#fff'; rr(CX,CY,CW,CH,R); ctx.fill();
+      ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+
+      // Rare glow
+      if (isRare) {
+        ctx.shadowColor='#ccff00'; ctx.shadowBlur=24;
+        ctx.strokeStyle='rgba(204,255,0,0.8)'; ctx.lineWidth=3;
+        rr(CX,CY,CW,CH,R); ctx.stroke();
+        ctx.shadowBlur=0;
+      }
 
       // Card border
-      ctx.strokeStyle = isRare ? '#ccff00' : '#1a1a1a';
-      ctx.lineWidth = isRare ? 3 : 1.5;
-      rr(cx,cy,cw,ch,r); ctx.stroke();
+      ctx.strokeStyle = isRare ? 'rgba(204,255,0,0.6)' : 'rgba(0,0,0,0.08)';
+      ctx.lineWidth = 1.5;
+      rr(CX,CY,CW,CH,R); ctx.stroke();
 
-      // Rare outer glow
-      if (isRare) {
-        ctx.shadowColor = '#ccff00'; ctx.shadowBlur = 20;
-        rr(cx,cy,cw,ch,r); ctx.stroke();
-        ctx.shadowBlur = 0;
-      }
-
-      // Top accent line
-      ctx.fillStyle = isRare ? '#ccff00' : '#e0e0e0';
-      ctx.fillRect(cx, cy, cw, 5);
+      // Top accent stripe
+      ctx.fillStyle = isRare ? '#ccff00' : 'rgba(0,0,0,0.06)';
+      ctx.fillRect(CX, CY, CW, 5);
 
       // Artwork area
-      const ax=cx+24, ay=cy+72, aw=cw-48, ah=560;
-      ctx.fillStyle = '#f4f4f4'; rr(ax,ay,aw,ah,12); ctx.fill();
+      const AX=CX, AY=CY, AW=CW, AH=640;
+      ctx.save();
+      rr(AX,AY,AW,AH,R); ctx.clip();
 
-      // Art number
-      ctx.fillStyle = 'rgba(0,0,0,0.07)'; ctx.font = 'bold 140px Arial';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(cardNum, ax+aw/2, ay+ah/2);
+      // Draw artwork image if loaded
+      const imgEl = artworkArea.querySelector('.artwork-img');
+      if (imgEl && imgEl.complete && imgEl.naturalWidth > 0) {
+        // Fit image to area
+        const iw=imgEl.naturalWidth, ih=imgEl.naturalHeight;
+        const scale=Math.max(AW/iw, AH/ih);
+        const dw=iw*scale, dh=ih*scale;
+        const dx=AX+(AW-dw)/2, dy=AY+(AH-dh)/2;
+        ctx.drawImage(imgEl, dx, dy, dw, dh);
+      } else {
+        ctx.fillStyle='rgba(240,240,238,0.9)';
+        ctx.fillRect(AX,AY,AW,AH);
+        ctx.fillStyle='rgba(0,0,0,0.06)';
+        ctx.font='bold 160px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(cardNum, AX+AW/2, AY+AH/2);
+        ctx.fillStyle='rgba(0,0,0,0.18)';
+        ctx.font='28px Arial';
+        ctx.fillText('작품 준비 중', AX+AW/2, AY+AH/2+100);
+      }
+      ctx.restore();
 
-      ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.font = '26px Arial';
-      ctx.fillText('작품 준비 중', ax+aw/2, ay+ah/2+90);
+      // Frosted info strip
+      ctx.fillStyle='rgba(255,255,255,0.9)';
+      ctx.fillRect(CX, CY+AH, CW, CH-AH);
+      ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(CX,CY+AH); ctx.lineTo(CX+CW,CY+AH); ctx.stroke();
 
-      // Card number
-      ctx.fillStyle = '#999999'; ctx.font = '600 20px Arial'; ctx.textAlign = 'left';
-      ctx.fillText(`#${String(cardNum).padStart(3,'0')}`, cx+32, cy+48);
+      // Info text
+      ctx.fillStyle='rgba(0,0,0,0.35)'; ctx.font='600 20px Arial';
+      ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+      ctx.fillText(`#${String(cardNum).padStart(3,'0')}`, CX+22, CY+AH+34);
 
-      // Rare badge
       if (isRare) {
-        ctx.fillStyle = '#ccff00'; ctx.fillRect(cx+cw-120, cy+30, 88, 28);
-        ctx.fillStyle = '#0a0a0a'; ctx.font = 'bold 16px Arial'; ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('RARE', cx+cw-76, cy+44);
+        ctx.fillStyle='#ccff00';
+        ctx.fillRect(CX+CW-98, CY+AH+18, 76, 24);
+        ctx.fillStyle='#0a0a0a'; ctx.font='bold 15px Arial';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('RARE', CX+CW-60, CY+AH+30);
       }
 
-      // Title
-      ctx.fillStyle = '#0a0a0a'; ctx.font = 'bold 30px Arial'; ctx.textAlign = 'center';
-      ctx.textBaseline = 'alphabetic';
-      ctx.fillText(`작품 ${cardNum}`, cx+cw/2, cy+ch-75);
+      ctx.fillStyle='#0a0a0a'; ctx.font='bold 28px Arial';
+      ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+      ctx.fillText(`작품 ${cardNum}`, CX+22, CY+AH+68);
 
-      ctx.fillStyle = '#999'; ctx.font = '18px Arial';
-      ctx.fillText(isRare ? 'RARE — 카드깡 컬렉션 · 2026' : '카드깡 컬렉션 · 2026', cx+cw/2, cy+ch-44);
+      ctx.fillStyle='rgba(0,0,0,0.38)'; ctx.font='20px Arial';
+      ctx.fillText(isRare?'RARE — 카드깡 컬렉션 · 2026':'카드깡 컬렉션 · 2026', CX+22, CY+AH+96);
 
       // Corners
-      ctx.strokeStyle = isRare ? '#ccff00' : '#e0e0e0'; ctx.lineWidth = 1.5;
-      [[cx+12,cy+12,1,1],[cx+cw-12,cy+12,-1,1],[cx+12,cy+ch-12,1,-1],[cx+cw-12,cy+ch-12,-1,-1]].forEach(([x,y,dx,dy])=>{
-        ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+22*dx,y); ctx.moveTo(x,y); ctx.lineTo(x,y+22*dy); ctx.stroke();
+      ctx.strokeStyle=isRare?'rgba(204,255,0,0.6)':'rgba(0,0,0,0.1)'; ctx.lineWidth=1.5;
+      [[CX+12,CY+12,1,1],[CX+CW-12,CY+12,-1,1],[CX+12,CY+CH-12,1,-1],[CX+CW-12,CY+CH-12,-1,-1]].forEach(([x,y,dx,dy])=>{
+        ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+20*dx,y); ctx.moveTo(x,y); ctx.lineTo(x,y+20*dy); ctx.stroke();
       });
 
       return cvs;
@@ -878,39 +1008,33 @@
       btn.disabled = true; btn.textContent = '저장 중...';
       try {
         const cvs = drawCanvas();
+        const fname = `card_${cardData.cardNum}${cardData.isRare?'_rare':''}.png`;
         if (navigator.share && navigator.canShare) {
           cvs.toBlob(async blob => {
-            const f = new File([blob], `card_${cardData.cardNum}${cardData.isRare?'_rare':''}.png`, {type:'image/png'});
+            const f = new File([blob], fname, {type:'image/png'});
             if (navigator.canShare({files:[f]})) {
               try { await navigator.share({files:[f], title:`카드깡 - 작품 ${cardData.cardNum}`}); showToast('저장 완료'); }
-              catch(e) { if (e.name !== 'AbortError') fallbackDl(cvs); }
-            } else { fallbackDl(cvs); }
-            btn.disabled = false; btn.textContent = '갤러리에 저장';
+              catch(e){ if(e.name!=='AbortError') fallbackDl(cvs,fname); }
+            } else { fallbackDl(cvs,fname); }
+            btn.disabled=false; btn.textContent='갤러리에 저장';
           });
         } else {
-          fallbackDl(cvs);
-          btn.disabled = false; btn.textContent = '갤러리에 저장';
+          fallbackDl(cvs,fname);
+          btn.disabled=false; btn.textContent='갤러리에 저장';
         }
-      } catch { btn.disabled = false; btn.textContent = '갤러리에 저장'; showToast('저장 실패. 다시 시도해주세요.'); }
+      } catch { btn.disabled=false; btn.textContent='갤러리에 저장'; showToast('저장 실패. 다시 시도해주세요.'); }
     }
 
-    function fallbackDl(cvs) {
-      const a = document.createElement('a');
-      a.download = `card_${cardData.cardNum}${cardData.isRare?'_rare':''}.png`;
-      a.href = cvs.toDataURL('image/png'); a.click();
+    function fallbackDl(cvs,fname) {
+      const a=document.createElement('a'); a.download=fname;
+      a.href=cvs.toDataURL('image/png'); a.click();
       showToast('이미지 저장됨');
     }
 
     function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg; t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 2500);
-    }
-
-    function showError(msg) {
-      scrLoading.classList.add('gone');
-      scrError.classList.remove('gone');
-      document.getElementById('errMsg').textContent = msg;
+      const t=document.getElementById('toast');
+      t.textContent=msg; t.classList.add('show');
+      setTimeout(()=>t.classList.remove('show'), 2500);
     }
 
     // ── Init ──
@@ -927,19 +1051,21 @@
         }
       }
 
+      // Random fallback (refresh behavior)
       if (!cardNum) {
-        cardNum = Math.floor(Math.random() * 15) + 1;
-        isRare = Math.random() < 1 / 50;
+        cardNum = Math.floor(Math.random() * CARD_COUNT) + 1;
+        isRare  = Math.random() < 1/50;
       }
 
       scrLoading.classList.add('gone');
       scrMain.classList.remove('gone');
       setupCard(cardNum, isRare);
 
+      // Preview: skip pack, auto-flip
       if (isPreview) {
         packWrap.style.display = 'none';
         dragHint.style.display = 'none';
-        cardContainer.style.opacity = '1';
+        cardContainer.style.opacity   = '1';
         cardContainer.style.transform = 'scale(1) translateY(0)';
         tearDone = true;
         setTimeout(() => {
