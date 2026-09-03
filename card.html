@@ -774,6 +774,15 @@
         title: '〈숲속 생활연구소〉 (헬멧)',
         caption: '최병석, 2015, 플라스틱 프로펠러, 나무손잡이,\n볼트, 너트, 와셔, 플라스틱 헬멧, 가죽, 동파이프,\n58×23×22cm, 1kg, 국립현대미술관 미술은행 소장, 부분'
       },
+      // 20, 21 — rare cards only
+      {
+        title: '〈표준 사용법 포스터〉',
+        caption: '이미지를 저장해서 미술관에 보여주면\n미술관 굿즈를 드립니다!'
+      },
+      {
+        title: '〈표준 사용법 포스터〉',
+        caption: '이미지를 저장해서 미술관에 보여주면\n미술관 굿즈를 드립니다!'
+      },
     ];
 
     // ── Token helpers ──
@@ -1106,8 +1115,12 @@
       }
 
       if (!cardNum) {
-        cardNum=Math.floor(Math.random()*CARD_COUNT)+1;
-        isRare=Math.random()<1/50;
+        isRare = Math.random() < 1/50;
+        if (isRare) {
+          cardNum = Math.random() < 0.5 ? 20 : 21;
+        } else {
+          cardNum = Math.floor(Math.random()*CARD_COUNT)+1;
+        }
       }
 
       scrLoading.classList.add('gone');

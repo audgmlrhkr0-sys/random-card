@@ -361,6 +361,9 @@
       { title:'〈숲속 생활연구소〉 (타이머)', cap:'최병석, 2015' },
       { title:'〈숲속 생활연구소〉 (두더지 퇴치 장치)', cap:'최병석, 2015' },
       { title:'〈숲속 생활연구소〉 (헬멧)', cap:'최병석, 2015' },
+      // 20, 21 — rare only
+      { title:'〈표준 사용법 포스터〉', cap:'레어 카드' },
+      { title:'〈표준 사용법 포스터〉', cap:'레어 카드' },
     ];
 
     function simpleHash(s) {
@@ -406,7 +409,7 @@
       const rare = document.createElement('button');
       rare.className = 'btn-test rare';
       rare.textContent = 'RARE 카드 확인';
-      rare.onclick = () => window.open(`${BASE}/card.html?t=${makeToken(1,true)}&preview=1`, '_blank');
+      rare.onclick = () => window.open(`${BASE}/card.html?t=${makeToken(20,true)}&preview=1`, '_blank');
       grid.appendChild(rare);
 
       // Check-all button
@@ -422,12 +425,14 @@
       const overlay = document.getElementById('checkOverlay');
       const grid    = document.getElementById('checkGrid');
       grid.innerHTML = '';
-      for (let i = 1; i <= CARD_COUNT; i++) {
+      for (let i = 1; i <= 21; i++) {
         const data = CARD_DATA[i];
+        const isRare = i >= 20;
         const card = document.createElement('div');
         card.className = 'check-card';
+        if (isRare) card.style.cssText = 'border-color:rgba(204,255,0,0.5);box-shadow:0 0 12px rgba(204,255,0,0.18);';
         card.innerHTML = `
-          <div class="check-num">${i}</div>
+          <div class="check-num" style="${isRare?'background:#ccff00;color:#0a0a0a;':''}">${i}${isRare?' ★ RARE':''}</div>
           <div class="check-img-wrap">
             <img src="${IMG_BASE}${i}.png" alt="${i}" onerror="this.style.opacity='0.2'">
           </div>
